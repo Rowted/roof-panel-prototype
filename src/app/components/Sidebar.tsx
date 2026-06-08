@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   ChevronDown, ChevronRight, MousePointer2, Home, Grid3X3,
-  Pencil, X, Info, Plus, Trash2,
+  Pencil, X, Info,
 } from "lucide-react";
 
 export interface RoofMargins {
@@ -67,45 +67,10 @@ export function Sidebar({
   onDeleteRoof,
   onDeletePanelField,
 }: SidebarProps) {
-  const [expandedRoofIds, setExpandedRoofIds] = useState<Set<string>>(new Set());
   const [roofPropsOpen, setRoofPropsOpen] = useState(false);
 
   const selectedRoof = roofs.find((r) => r.id === selectedRoofId) ?? null;
   const selectedPanelField = panelFields.find((p) => p.id === selectedPanelFieldId) ?? null;
-
-  // Auto-expand a roof when it's first created
-  useEffect(() => {
-    if (roofs.length > 0) {
-      const last = roofs[roofs.length - 1];
-      setExpandedRoofIds((prev) => new Set([...prev, last.id]));
-    }
-  }, [roofs.length]);
-
-  const toggleExpand = (roofId: string) => {
-    setExpandedRoofIds((prev) => {
-      const next = new Set(prev);
-      next.has(roofId) ? next.delete(roofId) : next.add(roofId);
-      return next;
-    });
-  };
-
-  const handleSelectRoof = (roofId: string) => {
-    onSelectRoof(roofId);
-    onToolChange("roof");
-  };
-
-  const handleSelectPanelField = (pf: PanelFieldData) => {
-    onSelectRoof(pf.roofId);
-    onSelectPanelField(pf.id);
-    onToolChange("panel-field");
-  };
-
-  const handleAddPanelField = (e: React.MouseEvent, roofId: string) => {
-    e.stopPropagation();
-    onFillRoofWithPanels(roofId);
-    // Ensure roof is expanded
-    setExpandedRoofIds((prev) => new Set([...prev, roofId]));
-  };
 
   return (
     <div className="w-[250px] shrink-0 bg-[#263238] flex flex-col overflow-y-auto">
@@ -150,205 +115,46 @@ export function Sidebar({
       {roofs.length === 0 ? (
         <EmptyState mode="draw-roof" />
       ) : (
-        <>
-          {/* Accordion tree */}
-          <div className="border-b border-white/10 shrink-0">
-            {roofs.map((roof) => {
-              const isRoofSelected = roof.id === selectedRoofId && activeTool === "roof";
-              const isExpanded = expandedRoofIds.has(roof.id);
-              const roofPanelFields = panelFields.filter((p) => p.roofId === roof.id);
-              const hasPanel = roofPanelFields.length > 0;
-
-              return (
-                <div key={roof.id}>
-                  {/* Roof row */}
-                  <div
-                    className={`flex items-center gap-1 px-2 py-2 cursor-pointer transition-colors group/row ${
-                      isRoofSelected ? "bg-white/10" : "hover:bg-white/5"
-                    }`}
-                    onClick={() => handleSelectRoof(roof.id)}
-                  >
-                    {/* Expand chevron */}
-                    <button
-                      className="p-0.5 text-white/40 hover:text-white/80 transition-colors shrink-0"
-                      onClick={(e) => { e.stopPropagation(); toggleExpand(roof.id); }}
-                    >
-                      {isExpanded
-                        ? <ChevronDown size={13} />
-                        : <ChevronRight size={13} />}
-                    </button>
-
-                    {/* Roof icon */}
-                    <Home size={13} className="text-white/40 shrink-0" />
-
-                    {/* Name + area */}
-                    <div className="flex-1 min-w-0 ml-1">
-                      <span className={`text-[13px] font-['Figtree',sans-serif] truncate block leading-none mb-0.5 ${isRoofSelected ? "text-white" : "text-white/70"}`}>
-                        {roof.name}
-                      </span>
-                      <span className="text-[10px] font-['Figtree',sans-serif] text-white/30 leading-none">
-                        {roof.area.toFixed(1)} m²
-                      </span>
-                    </div>
-
-                    {/* Add panel field button */}
-                    <button
-                      title={hasPanel ? "Panel field added" : "Fill with panels"}
-                      onClick={(e) => !hasPanel && handleAddPanelField(e, roof.id)}
-                      className={`shrink-0 p-1 rounded transition-colors ${
-                        hasPanel
-                          ? "text-[#5aabff]/40 cursor-default"
-                          : "text-white/0 group-hover/row:text-white/40 hover:!text-white/80"
-                      }`}
-                    >
-                      <Plus size={13} />
-                    </button>
-
-                    {/* Delete roof */}
-                    <button
-                      title="Delete roof"
-                      onClick={(e) => { e.stopPropagation(); onDeleteRoof(roof.id); }}
-                      className="shrink-0 p-1 rounded text-white/0 group-hover/row:text-white/30 hover:!text-red-400 transition-colors"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-
-                  {/* Panel field children */}
-                  {isExpanded && (
-                    <div>
-                      {roofPanelFields.length === 0 ? (
-                        <div className="pl-10 pr-3 py-1.5">
-                          <span className="text-[11px] font-['Figtree',sans-serif] text-white/20 italic">
-                            No panel fields yet
-                          </span>
-                        </div>
-                      ) : (
-                        roofPanelFields.map((pf) => {
-                          const isPfSelected = pf.id === selectedPanelFieldId && activeTool === "panel-field";
-                          return (
-                            <PanelFieldRow
-                              key={pf.id}
-                              pf={pf}
-                              isSelected={isPfSelected}
-                              onSelect={() => handleSelectPanelField(pf)}
-                              onRename={(name) => onUpdatePanelField(pf.id, { name })}
-                              onDelete={() => onDeletePanelField(pf.id)}
-                            />
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Detail panel */}
-          <div className="flex-1">
-            {activeTool === "roof" && selectedRoof && (
-              <RoofPanel
-                roof={selectedRoof}
-                onUpdate={(updates) => onUpdateRoof(selectedRoof.id, updates)}
-                hasPanelField={panelFields.some((p) => p.roofId === selectedRoof.id)}
-                onFillWithPanels={() => {
-                  onFillRoofWithPanels(selectedRoof.id);
-                  setExpandedRoofIds((prev) => new Set([...prev, selectedRoof.id]));
-                }}
-                propsOpen={roofPropsOpen}
-                onToggleProps={() => setRoofPropsOpen((v) => !v)}
-              />
-            )}
-            {activeTool === "panel-field" && selectedPanelField && (
-              <PanelFieldPanel
-                field={selectedPanelField}
-                onUpdate={(updates) => onUpdatePanelField(selectedPanelField.id, updates)}
-              />
-            )}
-            {activeTool === "panel-field" && !selectedPanelField && (
-              <EmptyState mode="draw-panel-field" />
-            )}
-          </div>
-        </>
+        <div className="flex-1">
+          {activeTool === "roof" && selectedRoof && (
+            <RoofPanel
+              roof={selectedRoof}
+              onUpdate={(updates) => onUpdateRoof(selectedRoof.id, updates)}
+              hasPanelField={panelFields.some((p) => p.roofId === selectedRoof.id)}
+              onFillWithPanels={() => onFillRoofWithPanels(selectedRoof.id)}
+              propsOpen={roofPropsOpen}
+              onToggleProps={() => setRoofPropsOpen((v) => !v)}
+            />
+          )}
+          {activeTool === "roof" && !selectedRoof && (
+            <EmptyState mode="select-roof" />
+          )}
+          {activeTool === "panel-field" && selectedPanelField && (
+            <PanelFieldPanel
+              field={selectedPanelField}
+              onUpdate={(updates) => onUpdatePanelField(selectedPanelField.id, updates)}
+            />
+          )}
+          {activeTool === "panel-field" && !selectedPanelField && (
+            <EmptyState mode="draw-panel-field" />
+          )}
+        </div>
       )}
     </div>
   );
 }
 
-function PanelFieldRow({
-  pf, isSelected, onSelect, onRename, onDelete,
-}: {
-  pf: PanelFieldData;
-  isSelected: boolean;
-  onSelect: () => void;
-  onRename: (name: string) => void;
-  onDelete: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (editing) inputRef.current?.select();
-  }, [editing]);
-
-  return (
-    <div
-      onClick={() => !editing && onSelect()}
-      className={`group/pf flex items-center gap-2 pl-8 pr-2 py-2 cursor-pointer transition-colors ${isSelected ? "bg-white/10" : "hover:bg-white/5"}`}
-    >
-      <Grid3X3 size={12} className={`shrink-0 ${isSelected ? "text-[#5aabff]" : "text-white/30"}`} />
-      <div className="flex-1 min-w-0 group/name">
-        {editing ? (
-          <input
-            ref={inputRef}
-            type="text"
-            defaultValue={pf.name}
-            onClick={(e) => e.stopPropagation()}
-            onBlur={(e) => { onRename(e.target.value); setEditing(false); }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === "Escape") {
-                onRename((e.target as HTMLInputElement).value);
-                setEditing(false);
-              }
-            }}
-            className="bg-transparent border-b border-white/40 text-white font-['Figtree',sans-serif] text-[12px] outline-none w-full leading-none pb-0.5"
-            autoFocus
-          />
-        ) : (
-          <div className="flex items-center gap-1">
-            <span className={`text-[12px] font-['Figtree',sans-serif] block leading-none mb-0.5 truncate ${isSelected ? "text-white" : "text-white/60"}`}>
-              {pf.name}
-            </span>
-            <button
-              onClick={(e) => { e.stopPropagation(); setEditing(true); }}
-              className="opacity-0 group-hover/name:opacity-40 hover:!opacity-100 transition-opacity text-white shrink-0"
-            >
-              <Pencil size={10} />
-            </button>
-          </div>
-        )}
-        <span className="text-[10px] font-['Figtree',sans-serif] text-white/30 leading-none">
-          {pf.panelCount} panels · {(pf.panelCount * 0.26).toFixed(1)} kWp
-        </span>
-      </div>
-      <button
-        title="Delete panel field"
-        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-        className="shrink-0 p-1 rounded text-white/0 group-hover/pf:text-white/30 hover:!text-red-400 transition-colors"
-      >
-        <Trash2 size={12} />
-      </button>
-    </div>
-  );
-}
-
-function EmptyState({ mode }: { mode: "draw-roof" | "draw-panel-field" }) {
+function EmptyState({ mode }: { mode: "draw-roof" | "draw-panel-field" | "select-roof" }) {
   const content = {
     "draw-roof": {
       icon: <MousePointer2 size={24} className="text-white/60" />,
       title: "Draw a roof surface",
       desc: "Click on the map to place corners of the roof outline. Double-click to close the shape.",
+    },
+    "select-roof": {
+      icon: <MousePointer2 size={24} className="text-white/60" />,
+      title: "Select a roof",
+      desc: "Click a roof on the map to see and edit its properties here.",
     },
     "draw-panel-field": {
       icon: <MousePointer2 size={24} className="text-white/60" />,
