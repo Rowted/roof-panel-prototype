@@ -136,8 +136,6 @@ const ROOF_TOOLS: { id: RoofSubTool; label: string; icon: React.ReactNode }[] = 
   { id: "roof-height",    label: "Roof height",     icon: <RoofHeightIcon /> },
   { id: "safety-margins", label: "Safety margins",  icon: <SafetyMarginsIcon /> },
   { id: "obstacle",       label: "Obstacle",        icon: <ObstacleIcon /> },
-  { id: "file-upload",    label: "File upload",     icon: <FileUploadIcon /> },
-  { id: "import-3d",      label: "Import 3D model", icon: <Import3DIcon /> },
 ];
 
 const PANEL_TOOLS: { id: PanelSubTool; label: string; icon: React.ReactNode }[] = [

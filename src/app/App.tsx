@@ -193,9 +193,19 @@ export default function App() {
     setSelectedPanelFieldId(newId);
   };
 
+  const totalPanels = panelFields.reduce((sum, p) => sum + p.panelCount, 0);
+  const totalKwp = totalPanels * 0.26;
+
   return (
     <div className="flex flex-col size-full overflow-hidden">
-      <TopNav mode={mode} onModeChange={setMode} />
+      <TopNav
+        mode={mode}
+        onModeChange={setMode}
+        onFileUpload={() => setActiveSubTool("file-upload")}
+        onImport3D={() => setActiveSubTool("import-3d")}
+        totalPanels={totalPanels}
+        totalKwp={totalKwp}
+      />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           activeTool={activeTool}
@@ -283,10 +293,10 @@ export default function App() {
             hasPanelField={panelFields.length > 0}
           />
           {activeSubTool === "file-upload" && (
-            <FileUploadModal onClose={() => setActiveSubTool("draw-roof")} />
+            <FileUploadModal onClose={() => setActiveSubTool(activeTool === "roof" ? "draw-roof" : "draw-panel")} />
           )}
           {activeSubTool === "import-3d" && (
-            <Import3DOverlay onClose={() => setActiveSubTool("draw-roof")} />
+            <Import3DOverlay onClose={() => setActiveSubTool(activeTool === "roof" ? "draw-roof" : "draw-panel")} />
           )}
         </div>
       </div>
