@@ -29,11 +29,12 @@ interface ContextBarProps {
   shadingSelectorActive: boolean;
   onToggleShadingSelector: () => void;
   shadingValue: number | null;
+  selectedRoofCount: number;
 }
 
-const CONTEXT_TOOLS = ["draw-roof", "draw-panel", "safety-margins", "roof-height", "obstacle", "move-roof", "move-panels", "shading-analysis"];
+const CONTEXT_TOOLS = ["draw-roof", "draw-panel", "safety-margins", "roof-height", "obstacle", "shading-analysis"];
 
-export function ContextBar({ activeSubTool, drawingMeasure, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue }: ContextBarProps) {
+export function ContextBar({ activeSubTool, drawingMeasure, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
   const isDrawing = (activeSubTool === "draw-roof" || activeSubTool === "draw-panel" || activeSubTool === "obstacle") && drawingMeasure !== null;
   if (!CONTEXT_TOOLS.includes(activeSubTool) && !isDrawing) return null;
 
@@ -46,10 +47,10 @@ export function ContextBar({ activeSubTool, drawingMeasure, isAdjustingHeight, s
         className="pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-150"
       >
         {isDrawing && <MeasureDisplay mm={drawingMeasure!} />}
-        {!isDrawing && activeSubTool === "move-roof" && (
-          hasSelection
-            ? <SelectActions onDuplicate={onDuplicateRoof} onDelete={onDeleteRoof} />
-            : <Prompt text="Click a roof surface to select it" />
+        {!isDrawing && activeSubTool === "draw-roof" && (
+          selectedRoofCount > 0
+            ? <RoofEditActions count={selectedRoofCount} onDuplicate={onDuplicateRoof} onDelete={onDeleteRoof} />
+            : <ShiftHintPrompt text="Click empty space to draw a roof, or click a roof to select it" />
         )}
         {!isDrawing && activeSubTool === "safety-margins" && (
           hasSelection && margins
@@ -71,12 +72,9 @@ export function ContextBar({ activeSubTool, drawingMeasure, isAdjustingHeight, s
             : <Prompt text="Click inside a roof surface to draw an obstacle" />
         )}
         {!isDrawing && activeSubTool === "draw-panel" && (
-          <Prompt text="Double-click a roof to fill it with panels, or draw a panel field inside it" />
-        )}
-        {!isDrawing && activeSubTool === "move-panels" && (
           hasSelectedPanelField
             ? <PanelSelectActions onDuplicate={onDuplicatePanelField} onDelete={onDeletePanelField} />
-            : <Prompt text="Click a panel field to select it" />
+            : <Prompt text="Double-click a roof to fill it with panels, or draw a panel field inside it" />
         )}
         {!isDrawing && activeSubTool === "shading-analysis" && (
           <ShadingControls
@@ -197,9 +195,13 @@ function BarBtn({ title, onClick, danger, children }: {
   );
 }
 
-function SelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
+function RoofEditActions({ count, onDuplicate, onDelete }: { count: number; onDuplicate: () => void; onDelete: () => void }) {
   return (
     <div className="flex items-center gap-2 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+      <span className="text-white/50 text-[12px] font-['Figtree',sans-serif] pr-1">
+        {count} roof{count > 1 ? "s" : ""} selected
+      </span>
+      <div className="w-px h-5 bg-white/15" />
       <button
         onClick={onDuplicate}
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
@@ -220,6 +222,27 @@ function SelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void; onD
         </svg>
         Delete
       </button>
+      <div className="w-px h-5 bg-white/15" />
+      <ShiftHint />
+    </div>
+  );
+}
+
+function ShiftHint() {
+  return (
+    <span className="flex items-center gap-1.5 text-white/35 text-[11px] font-['Figtree',sans-serif]">
+      <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-white/60 text-[10px] font-medium">⇧ Shift</kbd>
+      multi-select roofs &amp; nodes
+    </span>
+  );
+}
+
+function ShiftHintPrompt({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-3 bg-[rgba(21,27,30,0.92)] border border-white/10 rounded-full pl-5 pr-3 py-2 shadow-xl backdrop-blur-sm">
+      <span className="text-white/70 text-[12px] font-['Figtree',sans-serif] whitespace-nowrap">{text}</span>
+      <span className="w-px h-4 bg-white/15" />
+      <ShiftHint />
     </div>
   );
 }

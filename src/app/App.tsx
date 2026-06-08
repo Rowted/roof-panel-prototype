@@ -15,6 +15,36 @@ export default function App() {
   const [roofs, setRoofs] = useState<RoofData[]>([]);
   const [drawnRoofs, setDrawnRoofs] = useState<DrawnRoof[]>([]);
   const [selectedRoofId, setSelectedRoofId] = useState<string | null>(null);
+  // Additional roofs selected via Shift (beyond the primary selectedRoofId)
+  const [multiRoofIds, setMultiRoofIds] = useState<string[]>([]);
+
+  const allSelectedRoofIds = Array.from(new Set([selectedRoofId, ...multiRoofIds].filter(Boolean) as string[]));
+
+  // Plain select: set primary, clear the multi-selection
+  const handleSelectRoof = (id: string) => {
+    setSelectedRoofId(id || null);
+    setMultiRoofIds([]);
+    if (activeTool === "panel-field") {
+      const pf = panelFields.find((p) => p.roofId === id);
+      setSelectedPanelFieldId(pf?.id ?? null);
+    }
+  };
+
+  // Shift select: toggle a roof in/out of the selection
+  const handleShiftSelectRoof = (id: string) => {
+    if (!selectedRoofId) { setSelectedRoofId(id); return; }
+    if (id === selectedRoofId) return;
+    setMultiRoofIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
+  const handleDuplicateSelectedRoofs = () => {
+    allSelectedRoofIds.forEach((id) => handleDuplicateRoof(id));
+  };
+
+  const handleDeleteSelectedRoofs = () => {
+    allSelectedRoofIds.forEach((id) => handleDeleteRoof(id));
+    setMultiRoofIds([]);
+  };
 
   const [panelFields, setPanelFields] = useState<PanelFieldData[]>([]);
   const panelFieldCounterRef = useRef(0);
@@ -191,13 +221,9 @@ export default function App() {
             drawnPanelFields={drawnPanelFields}
             selectedRoofId={selectedRoofId}
             selectedPanelFieldId={selectedPanelFieldId}
-            onSelectRoof={(id) => {
-              setSelectedRoofId(id);
-              if (activeTool === "panel-field") {
-                const pf = panelFields.find((p) => p.roofId === id);
-                setSelectedPanelFieldId(pf?.id ?? null);
-              }
-            }}
+            onSelectRoof={handleSelectRoof}
+            multiRoofIds={multiRoofIds}
+            onShiftSelectRoof={handleShiftSelectRoof}
             onRoofDrawn={handleRoofDrawn}
             onPanelFieldDrawn={handlePanelFieldDrawn}
             onFillRoofWithPanels={handleFillRoofWithPanels}
@@ -234,8 +260,9 @@ export default function App() {
             onUpdateRoofHeight={(h) => {
               if (selectedRoofId) handleUpdateRoof(selectedRoofId, h);
             }}
-            onDuplicateRoof={() => selectedRoofId && handleDuplicateRoof(selectedRoofId)}
-            onDeleteRoof={() => selectedRoofId && handleDeleteRoof(selectedRoofId)}
+            onDuplicateRoof={handleDuplicateSelectedRoofs}
+            onDeleteRoof={handleDeleteSelectedRoofs}
+            selectedRoofCount={allSelectedRoofIds.length}
             selectedObstacle={obstacles.find((o) => o.id === selectedObstacleId) ?? null}
             onUpdateObstacle={(u) => selectedObstacleId && handleUpdateObstacle(selectedObstacleId, u)}
             onDeleteObstacle={() => selectedObstacleId && handleDeleteObstacle(selectedObstacleId)}

@@ -34,6 +34,8 @@ interface MapCanvasProps {
   onUpdatePanelFieldPoints: (id: string, points: Point[]) => void;
   shadingSelectorActive: boolean;
   onShadingPick: (value: number) => void;
+  multiRoofIds: string[];
+  onShiftSelectRoof: (id: string) => void;
 }
 
 function polygonArea(points: Point[]): number {
@@ -373,9 +375,10 @@ type DragState = {
   type: "move" | "vertex";
   kind: "roof" | "panel";
   roofId: string;
-  vertexIndex?: number;
+  vertexIndices?: number[];   // nodes being dragged (multi-node)
+  moveIds?: string[];         // roofs being moved together (multi-roof)
   startMouse: Point;
-  startPoints: Point[];
+  startPointsById: Record<string, Point[]>;
 } | null;
 
 const VERTEX_HIT_RADIUS = 10;
@@ -387,6 +390,7 @@ export function MapCanvas({
   obstacles, selectedObstacleId, onObstacleDrawn, onSelectObstacle,
   onSelectPanelField, onUpdatePanelFieldPoints,
   shadingSelectorActive, onShadingPick,
+  multiRoofIds, onShiftSelectRoof,
 }: MapCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -396,7 +400,11 @@ export function MapCanvas({
   const [hasAdjustedHeight, setHasAdjustedHeight] = useState(false);
   const [dragState, setDragState] = useState<DragState>(null);
   const [cursorStyle, setCursorStyle] = useState("cursor-crosshair");
-  const [dragPreviewPoints, setDragPreviewPoints] = useState<{ id: string; points: Point[] } | null>(null);
+  // Live preview of dragged polygons (roofs or panel fields), keyed by id
+  const [dragPreview, setDragPreview] = useState<{ id: string; points: Point[] }[] | null>(null);
+  // Multi-node selection on the primary selected roof (indices into its points)
+  const [selectedNodes, setSelectedNodes] = useState<number[]>([]);
+  const previewFor = (id: string) => dragPreview?.find((d) => d.id === id)?.points;
   // Height drag: centroid is the fixed origin, current is where the mouse is
   const [heightDragCentroid, setHeightDragCentroid] = useState<Point | null>(null);
   const [heightDragCurrent, setHeightDragCurrent] = useState<Point | null>(null);
@@ -414,10 +422,12 @@ export function MapCanvas({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw completed roofs
+    const allSelectedRoofIds = new Set([selectedRoofId, ...multiRoofIds].filter(Boolean) as string[]);
     drawnRoofs.forEach((roof) => {
       if (roof.points.length < 2) return;
-      const isSelected = roof.id === selectedRoofId;
-      const pts = (dragPreviewPoints?.id === roof.id) ? dragPreviewPoints.points : roof.points;
+      const isSelected = allSelectedRoofIds.has(roof.id);
+      const isPrimary = roof.id === selectedRoofId;
+      const pts = previewFor(roof.id) ?? roof.points;
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       pts.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
@@ -429,12 +439,13 @@ export function MapCanvas({
       ctx.setLineDash([]);
       ctx.stroke();
 
-      // Vertex handles in move-roof mode
-      if (activeSubTool === "move-roof" && isSelected) {
-        pts.forEach((p) => {
+      // Vertex handles in draw-roof mode for selected roofs
+      if (activeSubTool === "draw-roof" && isSelected && drawingPoints.length === 0) {
+        pts.forEach((p, i) => {
+          const nodeSelected = isPrimary && selectedNodes.includes(i);
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-          ctx.fillStyle = "white";
+          ctx.arc(p.x, p.y, nodeSelected ? 7 : 6, 0, Math.PI * 2);
+          ctx.fillStyle = nodeSelected ? "#0068DE" : "white";
           ctx.fill();
           ctx.strokeStyle = "#0068DE";
           ctx.lineWidth = 2;
@@ -446,12 +457,12 @@ export function MapCanvas({
     // Draw panel fields
     drawnPanelFields.forEach((pf) => {
       if (pf.points.length < 3) return;
-      const pts = (dragPreviewPoints?.id === pf.id) ? dragPreviewPoints.points : pf.points;
+      const pts = previewFor(pf.id) ?? pf.points;
       const isSelected = pf.id === selectedPanelFieldId;
       drawPanelGrid(ctx, pts, "vertical", isSelected);
 
-      // Vertex handles in panel select mode
-      if (activeSubTool === "move-panels" && isSelected) {
+      // Vertex handles in draw-panel mode for selected field
+      if (activeSubTool === "draw-panel" && isSelected && drawingPoints.length === 0) {
         pts.forEach((p) => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
@@ -532,7 +543,7 @@ export function MapCanvas({
       });
 
     }
-  }, [drawnRoofs, drawnPanelFields, drawingPoints, mousePos, selectedRoofId, selectedPanelFieldId, activeTool, activeSubTool, roofs, isDraggingHeight, dragPreviewPoints, heightDragCentroid, heightDragCurrent, obstacles, selectedObstacleId]);
+  }, [drawnRoofs, drawnPanelFields, drawingPoints, mousePos, selectedRoofId, selectedPanelFieldId, activeTool, activeSubTool, roofs, isDraggingHeight, dragPreview, heightDragCentroid, heightDragCurrent, obstacles, selectedObstacleId, multiRoofIds, selectedNodes]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -653,56 +664,62 @@ export function MapCanvas({
       return;
     }
 
-    if (activeTool === "roof") {
-      // Select mode: click to select, no drawing
-      if (activeSubTool === "move-roof") {
-        const target = drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
-        if (target) onSelectRoof(target.id);
-        return;
-      }
-      // Roof height: click to select
-      if (activeSubTool === "roof-height") {
-        const target = drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
-        if (target) onSelectRoof(target.id);
-        return;
-      }
-      if (drawingPoints.length >= 3) {
-        const first = drawingPoints[0];
-        if (Math.hypot(pt.x - first.x, pt.y - first.y) < 15) {
-          finishRoof(drawingPoints);
-          return;
-        }
-      }
-      setDrawingPoints((prev) => [...prev, pt]);
+    // Roof height: click to select
+    if (activeTool === "roof" && activeSubTool === "roof-height") {
+      const target = drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
+      if (target) onSelectRoof(target.id);
       return;
     }
 
-    if (activeTool === "panel-field") {
-      if (drawnRoofs.length === 0) return;
-
-      // Panel select mode: click to select a panel field, no drawing
-      if (activeSubTool === "move-panels") {
-        const target = drawnPanelFields.find((p) => isPointInPolygon(pt, p.points));
-        onSelectPanelField(target?.id ?? null);
+    if (activeTool === "roof" && activeSubTool === "draw-roof") {
+      // Mid-drawing: add points / close the shape
+      if (drawingPoints.length > 0) {
+        if (drawingPoints.length >= 3) {
+          const first = drawingPoints[0];
+          if (Math.hypot(pt.x - first.x, pt.y - first.y) < 15) {
+            finishRoof(drawingPoints);
+            return;
+          }
+        }
+        setDrawingPoints((prev) => [...prev, pt]);
         return;
       }
+      // Not drawing: clicking inside an existing roof selects it (handled in mousedown).
+      // Clicking empty space starts a new roof.
+      const inside = drawnRoofs.some((r) => isPointInPolygon(pt, r.points));
+      if (inside) return;
+      onSelectRoof(""); // clear selection when starting a new shape
+      setSelectedNodes([]);
+      setDrawingPoints([pt]);
+      return;
+    }
 
-      // Find which roof this click is inside
-      const targetRoof = drawingPoints.length > 0
-        ? drawnRoofs.find((r) => r.id === selectedRoofId)
-        : drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
+    if (activeTool === "panel-field" && activeSubTool === "draw-panel") {
+      if (drawnRoofs.length === 0) return;
 
-      if (!targetRoof) return;
-      onSelectRoof(targetRoof.id);
-
-      if (drawingPoints.length >= 3) {
-        const first = drawingPoints[0];
-        if (Math.hypot(pt.x - first.x, pt.y - first.y) < 15) {
-          finishPanelField(drawingPoints, targetRoof.id);
-          return;
+      // Mid-drawing: add points / close
+      if (drawingPoints.length > 0) {
+        const targetRoof = drawnRoofs.find((r) => r.id === selectedRoofId);
+        if (drawingPoints.length >= 3) {
+          const first = drawingPoints[0];
+          if (Math.hypot(pt.x - first.x, pt.y - first.y) < 15) {
+            finishPanelField(drawingPoints, targetRoof?.id ?? selectedRoofId ?? "");
+            return;
+          }
         }
+        setDrawingPoints((prev) => [...prev, pt]);
+        return;
       }
-      setDrawingPoints((prev) => [...prev, pt]);
+      // Not drawing: clicking a panel field selects it (handled in mousedown).
+      // Clicking inside a roof (not a field) starts a new panel field.
+      const insideField = drawnPanelFields.some((p) => isPointInPolygon(pt, p.points));
+      if (insideField) return;
+      const targetRoof = drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
+      if (!targetRoof) return;
+      onSelectPanelField(null);
+      onSelectRoof(targetRoof.id);
+      setDrawingPoints([pt]);
+      return;
     }
   };
 
@@ -736,50 +753,47 @@ export function MapCanvas({
   const handleMouseMove = (e: React.MouseEvent) => {
     const pt = getRelativePoint(e);
 
-    // Handle roof/panel drag (move or reshape)
-    if ((activeSubTool === "move-roof" || activeSubTool === "move-panels") && dragState) {
+    // Active drag (move or vertex reshape), for roofs or panel fields
+    if (dragState) {
       const dx = pt.x - dragState.startMouse.x;
       const dy = pt.y - dragState.startMouse.y;
-      let newPoints: Point[];
       if (dragState.type === "move") {
-        newPoints = dragState.startPoints.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+        const ids = dragState.moveIds ?? [dragState.roofId];
+        const preview = ids.map((id) => ({
+          id,
+          points: (dragState.startPointsById[id] ?? []).map((p) => ({ x: p.x + dx, y: p.y + dy })),
+        }));
+        setDragPreview(preview);
       } else {
-        newPoints = dragState.startPoints.map((p, i) =>
-          i === dragState.vertexIndex ? { x: p.x + dx, y: p.y + dy } : p
-        );
+        const idx = dragState.vertexIndices ?? [];
+        const base = dragState.startPointsById[dragState.roofId] ?? [];
+        const newPoints = base.map((p, i) => (idx.includes(i) ? { x: p.x + dx, y: p.y + dy } : p));
+        setDragPreview([{ id: dragState.roofId, points: newPoints }]);
       }
-      setDragPreviewPoints({ id: dragState.roofId, points: newPoints });
       return;
     }
 
-    // Cursor feedback in panel select mode (no drag active)
-    if (activeSubTool === "move-panels") {
-      const sel = drawnPanelFields.find((p) => p.id === selectedPanelFieldId);
-      if (sel) {
-        const nearVertex = sel.points.some((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
-        if (nearVertex) { setCursorStyle("cursor-crosshair"); return; }
-        if (isPointInPolygon(pt, sel.points)) { setCursorStyle("cursor-move"); return; }
-      }
-      const anyPanel = drawnPanelFields.some((p) => isPointInPolygon(pt, p.points));
-      setCursorStyle(anyPanel ? "cursor-pointer" : "cursor-default");
-      return;
-    }
-
-    // Cursor feedback in move-roof mode (no drag active)
-    if (activeSubTool === "move-roof") {
+    // Cursor feedback while drawing-tool is idle (roof: draw-roof, panel: draw-panel)
+    if (activeSubTool === "draw-roof" && drawingPoints.length === 0) {
       const sel = drawnRoofs.find((r) => r.id === selectedRoofId);
       if (sel) {
         const nearVertex = sel.points.some((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
         if (nearVertex) { setCursorStyle("cursor-crosshair"); return; }
-        if (isPointInPolygon(pt, sel.points)) { setCursorStyle("cursor-move"); return; }
       }
-      // Check unselected roofs
       const anyRoof = drawnRoofs.some((r) => isPointInPolygon(pt, r.points));
-      setCursorStyle(anyRoof ? "cursor-pointer" : "cursor-default");
+      setCursorStyle(anyRoof ? "cursor-move" : "cursor-crosshair");
       return;
     }
-
-    if (activeSubTool === "move-panels") return;
+    if (activeSubTool === "draw-panel" && drawingPoints.length === 0) {
+      const sel = drawnPanelFields.find((p) => p.id === selectedPanelFieldId);
+      if (sel) {
+        const nearVertex = sel.points.some((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
+        if (nearVertex) { setCursorStyle("cursor-crosshair"); return; }
+      }
+      const anyPanel = drawnPanelFields.some((p) => isPointInPolygon(pt, p.points));
+      setCursorStyle(anyPanel ? "cursor-move" : "cursor-crosshair");
+      return;
+    }
 
     // Height drag: update current mouse and fire inclination/direction callback
     if (activeSubTool === "roof-height" && isDraggingHeight && heightDragCentroid && selectedRoofId) {
@@ -814,7 +828,7 @@ export function MapCanvas({
   const handleMouseLeave = () => {
     setMousePos(null);
     onDrawingMeasure(null);
-    if (activeSubTool === "move-roof" || activeSubTool === "move-panels") setCursorStyle("cursor-default");
+    if (activeSubTool === "draw-roof" || activeSubTool === "draw-panel") setCursorStyle("cursor-crosshair");
   };
 
   // Esc cancels any in-progress drawing
@@ -830,6 +844,9 @@ export function MapCanvas({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onDrawingMeasure]);
 
+  // Clear node selection when the primary selected roof changes
+  useEffect(() => { setSelectedNodes([]); }, [selectedRoofId]);
+
   // Reset height-adjust state when leaving roof-height tool
   useEffect(() => {
     if (activeSubTool !== "roof-height") {
@@ -843,45 +860,74 @@ export function MapCanvas({
 
   // Reset cursor when switching tool
   useEffect(() => {
-    if (activeSubTool === "move-roof" || activeSubTool === "move-panels") setCursorStyle("cursor-default");
-    else if (activeSubTool === "shading-analysis") setCursorStyle(shadingSelectorActive ? "cursor-crosshair" : "cursor-default");
+    if (activeSubTool === "shading-analysis") setCursorStyle(shadingSelectorActive ? "cursor-crosshair" : "cursor-default");
     else setCursorStyle("cursor-crosshair");
     setDragState(null);
-    setDragPreviewPoints(null);
+    setDragPreview(null);
+    setSelectedNodes([]);
   }, [activeSubTool, shadingSelectorActive]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const pt = getRelativePoint(e);
+    const shift = e.shiftKey;
 
-    if (activeSubTool === "move-roof") {
-      // Check vertex first (reshape), then polygon body (move)
-      const sel = drawnRoofs.find((r) => r.id === selectedRoofId);
-      if (sel) {
-        const vi = sel.points.findIndex((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
+    // Draw-roof: select / multi-select / move / reshape (only when not mid-draw)
+    if (activeSubTool === "draw-roof" && drawingPoints.length === 0) {
+      const primary = drawnRoofs.find((r) => r.id === selectedRoofId);
+      // 1) Vertex of the primary selected roof → node select / reshape
+      if (primary) {
+        const vi = primary.points.findIndex((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
         if (vi !== -1) {
-          setDragState({ type: "vertex", kind: "roof", roofId: sel.id, vertexIndex: vi, startMouse: pt, startPoints: sel.points });
+          if (shift) {
+            // Toggle node into selection; no drag
+            setSelectedNodes((prev) => prev.includes(vi) ? prev.filter((n) => n !== vi) : [...prev, vi]);
+            return;
+          }
+          const idx = selectedNodes.includes(vi) && selectedNodes.length > 1 ? selectedNodes : [vi];
+          setSelectedNodes(idx);
+          setDragState({ type: "vertex", kind: "roof", roofId: primary.id, vertexIndices: idx, startMouse: pt, startPointsById: { [primary.id]: primary.points } });
           return;
         }
-        if (isPointInPolygon(pt, sel.points)) {
-          setDragState({ type: "move", kind: "roof", roofId: sel.id, startMouse: pt, startPoints: sel.points });
+      }
+      // 2) Inside a roof body → select / multi-select / move
+      const hitRoof = drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
+      if (hitRoof) {
+        if (shift) {
+          onShiftSelectRoof(hitRoof.id);
           return;
         }
+        const currentSet = new Set([selectedRoofId, ...multiRoofIds].filter(Boolean) as string[]);
+        if (!currentSet.has(hitRoof.id)) {
+          onSelectRoof(hitRoof.id);
+          setSelectedNodes([]);
+        }
+        const moveIds = currentSet.has(hitRoof.id) ? Array.from(currentSet) : [hitRoof.id];
+        const startPointsById: Record<string, Point[]> = {};
+        moveIds.forEach((id) => {
+          const r = drawnRoofs.find((rr) => rr.id === id);
+          if (r) startPointsById[id] = r.points;
+        });
+        setDragState({ type: "move", kind: "roof", roofId: hitRoof.id, moveIds, startMouse: pt, startPointsById });
+        return;
       }
       return;
     }
 
-    if (activeSubTool === "move-panels") {
+    // Draw-panel: select / move / reshape a panel field (only when not mid-draw)
+    if (activeSubTool === "draw-panel" && drawingPoints.length === 0) {
       const sel = drawnPanelFields.find((p) => p.id === selectedPanelFieldId);
       if (sel) {
         const vi = sel.points.findIndex((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
         if (vi !== -1) {
-          setDragState({ type: "vertex", kind: "panel", roofId: sel.id, vertexIndex: vi, startMouse: pt, startPoints: sel.points });
+          setDragState({ type: "vertex", kind: "panel", roofId: sel.id, vertexIndices: [vi], startMouse: pt, startPointsById: { [sel.id]: sel.points } });
           return;
         }
-        if (isPointInPolygon(pt, sel.points)) {
-          setDragState({ type: "move", kind: "panel", roofId: sel.id, startMouse: pt, startPoints: sel.points });
-          return;
-        }
+      }
+      const hit = drawnPanelFields.find((p) => isPointInPolygon(pt, p.points));
+      if (hit) {
+        if (hit.id !== selectedPanelFieldId) onSelectPanelField(hit.id);
+        setDragState({ type: "move", kind: "panel", roofId: hit.id, moveIds: [hit.id], startMouse: pt, startPointsById: { [hit.id]: hit.points } });
+        return;
       }
       return;
     }
@@ -899,12 +945,14 @@ export function MapCanvas({
   };
 
   const handleMouseUp = () => {
-    if (dragState && dragPreviewPoints) {
-      if (dragState.kind === "panel") onUpdatePanelFieldPoints(dragPreviewPoints.id, dragPreviewPoints.points);
-      else onUpdateRoofPoints(dragPreviewPoints.id, dragPreviewPoints.points);
+    if (dragState && dragPreview) {
+      dragPreview.forEach((d) => {
+        if (dragState.kind === "panel") onUpdatePanelFieldPoints(d.id, d.points);
+        else onUpdateRoofPoints(d.id, d.points);
+      });
     }
     setDragState(null);
-    setDragPreviewPoints(null);
+    setDragPreview(null);
     setIsDraggingHeight(false);
     setHeightDragCurrent(null);
     setHeightDragCentroid(null);
@@ -917,13 +965,13 @@ export function MapCanvas({
     else if (drawingPoints.length === 0) hint = "Click inside a roof surface to start drawing an obstacle";
     else if (drawingPoints.length < 3) hint = `${drawingPoints.length} point${drawingPoints.length > 1 ? "s" : ""} — keep clicking to add corners`;
     else hint = "Double-click or click first point to close the obstacle";
-  } else if (activeTool === "roof") {
-    if (drawingPoints.length === 0) hint = "Click to start drawing a roof outline · Double-click a roof to fill with panels";
+  } else if (activeTool === "roof" && activeSubTool === "draw-roof") {
+    // Idle hints are shown in the contextual bar; only guide during drawing
+    if (drawingPoints.length === 0) hint = "";
     else if (drawingPoints.length < 3) hint = `${drawingPoints.length} point${drawingPoints.length > 1 ? "s" : ""} — keep clicking to add corners`;
     else hint = "Double-click or click first point to close the shape";
-  } else if (activeTool === "panel-field") {
-    if (drawnRoofs.length === 0) hint = "";
-    else if (drawingPoints.length === 0) hint = "Click inside a roof to start drawing a panel field";
+  } else if (activeTool === "panel-field" && activeSubTool === "draw-panel") {
+    if (drawingPoints.length === 0) hint = "";
     else if (drawingPoints.length < 3) hint = `${drawingPoints.length} point${drawingPoints.length > 1 ? "s" : ""} — keep clicking`;
     else hint = "Double-click or click first point to close the panel field";
   }

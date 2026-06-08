@@ -133,7 +133,6 @@ const ShadingIcon = () => (
 
 const ROOF_TOOLS: { id: RoofSubTool; label: string; icon: React.ReactNode }[] = [
   { id: "draw-roof",      label: "Draw roof",       icon: <DrawRoofIcon /> },
-  { id: "move-roof",      label: "Select",          icon: <CursorIcon /> },
   { id: "roof-height",    label: "Roof height",     icon: <RoofHeightIcon /> },
   { id: "safety-margins", label: "Safety margins",  icon: <SafetyMarginsIcon /> },
   { id: "obstacle",       label: "Obstacle",        icon: <ObstacleIcon /> },
@@ -143,6 +142,5 @@ const ROOF_TOOLS: { id: RoofSubTool; label: string; icon: React.ReactNode }[] = 
 
 const PANEL_TOOLS: { id: PanelSubTool; label: string; icon: React.ReactNode }[] = [
   { id: "draw-panel",       label: "Draw panels",      icon: <DrawPanelIcon /> },
-  { id: "move-panels",      label: "Select",           icon: <CursorIcon /> },
   { id: "shading-analysis", label: "Shading analysis", icon: <ShadingIcon /> },
 ];
