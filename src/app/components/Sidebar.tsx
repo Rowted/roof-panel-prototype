@@ -148,18 +148,18 @@ function EmptyState({ mode }: { mode: "draw-roof" | "draw-panel-field" | "select
   const content = {
     "draw-roof": {
       icon: <MousePointer2 size={24} className="text-white/60" />,
-      title: "Draw a roof surface",
-      desc: "Click on the map to place corners of the roof outline. Double-click to close the shape.",
+      title: "No roof yet",
+      desc: "Draw your first roof on the map — its details will appear here.",
     },
     "select-roof": {
       icon: <MousePointer2 size={24} className="text-white/60" />,
-      title: "Select a roof",
-      desc: "Click a roof on the map to see and edit its properties here.",
+      title: "No roof selected",
+      desc: "Select a roof on the map to see and edit its properties here.",
     },
     "draw-panel-field": {
       icon: <MousePointer2 size={24} className="text-white/60" />,
-      title: "Draw a panel field",
-      desc: "Click inside a roof outline to draw the panel field area. Double-click to finish.",
+      title: "No panel field selected",
+      desc: "Create a panel field on the map to see and edit its settings here.",
     },
   }[mode];
 
