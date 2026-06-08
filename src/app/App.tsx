@@ -6,6 +6,7 @@ import { ToolDock } from "./components/ToolDock";
 import { ContextBar } from "./components/ContextBar";
 import { FileUploadModal } from "./components/FileUploadModal";
 import { Import3DOverlay } from "./components/Import3DOverlay";
+import { SunPathView } from "./components/SunPathView";
 
 export default function App() {
   const [mode, setMode] = useState<"basic" | "pro">("pro");
@@ -55,6 +56,8 @@ export default function App() {
 
   const [obstacles, setObstacles] = useState<ObstacleData[]>([]);
   const [selectedObstacleId, setSelectedObstacleId] = useState<string | null>(null);
+
+  const [sunPathOpen, setSunPathOpen] = useState(false);
 
   const [shadingDisplay, setShadingDisplay] = useState(true);
   const [shadingSelectorActive, setShadingSelectorActive] = useState(false);
@@ -205,6 +208,8 @@ export default function App() {
         onImport3D={() => setActiveSubTool("import-3d")}
         totalPanels={totalPanels}
         totalKwp={totalKwp}
+        sunPathOpen={sunPathOpen}
+        onToggleSunPath={() => setSunPathOpen((v) => !v)}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -300,6 +305,7 @@ export default function App() {
           )}
         </div>
       </div>
+      {sunPathOpen && <SunPathView onClose={() => setSunPathOpen(false)} />}
     </div>
   );
 }

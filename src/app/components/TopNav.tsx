@@ -8,10 +8,11 @@ interface TopNavProps {
   onImport3D: () => void;
   totalPanels: number;
   totalKwp: number;
+  sunPathOpen: boolean;
+  onToggleSunPath: () => void;
 }
 
-export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPanels, totalKwp }: TopNavProps) {
-  const [showSunPath, setShowSunPath] = useState(false);
+export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPanels, totalKwp, sunPathOpen, onToggleSunPath }: TopNavProps) {
   const [showMeasurements, setShowMeasurements] = useState(false);
 
   return (
@@ -74,9 +75,9 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
 
       {/* Show sun path (replaces the 2D/3D switch) */}
       <button
-        onClick={() => setShowSunPath((v) => !v)}
+        onClick={onToggleSunPath}
         className={`group relative flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
-          showSunPath ? "bg-[#0068DE] text-white" : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
+          sunPathOpen ? "bg-[#0068DE] text-white" : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
         }`}
       >
         <Sun size={14} />
