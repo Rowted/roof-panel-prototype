@@ -50,7 +50,7 @@ export function ContextBar({ activeSubTool, drawingMeasure, isAdjustingHeight, s
         {!isDrawing && activeSubTool === "draw-roof" && (
           selectedRoofCount > 0
             ? <RoofEditActions count={selectedRoofCount} onDuplicate={onDuplicateRoof} onDelete={onDeleteRoof} />
-            : <ShiftHintPrompt text="Click empty space to draw a roof, or click a roof to select it" />
+            : <Prompt text="Click on the map to start drawing a roof" />
         )}
         {!isDrawing && activeSubTool === "safety-margins" && (
           hasSelection && margins
