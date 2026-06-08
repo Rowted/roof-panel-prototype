@@ -86,7 +86,7 @@ export function Sidebar({
             }`}
           >
             <Home size={18} />
-            <span className="text-[12px] font-semibold leading-none">Roofs</span>
+            <span className="text-[12px] font-semibold leading-none">Building</span>
           </button>
 
           <div className="flex-1 relative group">
@@ -101,7 +101,7 @@ export function Sidebar({
               }`}
             >
               <Grid3X3 size={18} />
-              <span className="text-[12px] font-semibold leading-none">Panel Fields</span>
+              <span className="text-[12px] font-semibold leading-none">Panels</span>
             </button>
             {roofs.length === 0 && (
               <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-44 bg-[#151b1e] text-white/80 text-[11px] font-['Figtree',sans-serif] px-3 py-2 rounded shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50 text-center leading-snug">
