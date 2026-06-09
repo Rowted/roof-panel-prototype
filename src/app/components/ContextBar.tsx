@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RoofMargins } from "./Sidebar";
 import { ObstacleData } from "./MapCanvas";
 
@@ -229,9 +229,27 @@ function RoofEditActions({ count, onDuplicate, onDelete }: { count: number; onDu
 }
 
 function ShiftHint() {
+  const [down, setDown] = useState(false);
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => { if (e.key === "Shift") setDown(true); };
+    const onUp = (e: KeyboardEvent) => { if (e.key === "Shift") setDown(false); };
+    const onBlur = () => setDown(false);
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup", onUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup", onUp);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
   return (
-    <span className="flex items-center gap-1.5 text-white/35 text-[11px] font-['Figtree',sans-serif]">
-      <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-white/60 text-[10px] font-medium">⇧ Shift</kbd>
+    <span className={`flex items-center gap-1.5 text-[11px] font-['Figtree',sans-serif] transition-colors ${down ? "text-white/70" : "text-white/35"}`}>
+      <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-medium border transition-colors ${
+        down
+          ? "bg-[#0068DE] border-[#0068DE] text-white"
+          : "bg-white/10 border-white/15 text-white/60"
+      }`}>⇧ Shift</kbd>
       multi-select roofs &amp; nodes
     </span>
   );
