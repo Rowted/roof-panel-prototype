@@ -16,8 +16,8 @@ export function ToolDock({ activeTool, activeSubTool, onSubToolChange, onToolCha
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
       <div className="flex items-center gap-1 bg-[rgba(21,27,30,0.96)] rounded-xl px-3 py-2 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm">
-        {/* Stage switch — Building / Panels */}
-        <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 mr-1">
+        {/* Stage switch — Building / Panels (neutral segmented control) */}
+        <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 h-12 mr-1">
           <StageButton
             label="Building"
             active={activeTool === "roof"}
@@ -32,7 +32,7 @@ export function ToolDock({ activeTool, activeSubTool, onSubToolChange, onToolCha
             icon={<StageGridIcon />}
           />
         </div>
-        <div className="w-px h-9 bg-white/15 mx-1.5 shrink-0" />
+        <div className="w-px h-8 bg-white/15 mx-1.5 shrink-0" />
 
         {tools.map((tool) => {
           const isActive = activeSubTool === tool.id;
@@ -46,18 +46,18 @@ export function ToolDock({ activeTool, activeSubTool, onSubToolChange, onToolCha
               onClick={() => !isLocked && onSubToolChange(tool.id)}
               title={tool.label}
               disabled={isLocked}
-              className={`flex flex-col items-center gap-2 px-4 py-2.5 rounded-lg transition-all min-w-[64px] ${
+              className={`flex flex-col items-center justify-center gap-1.5 h-12 px-4 rounded-lg transition-all min-w-[60px] text-[11px] font-medium font-['Figtree',sans-serif] ${
                 isLocked
-                  ? "text-white/20 cursor-not-allowed"
+                  ? "text-white/25 cursor-not-allowed"
                   : isActive
-                  ? "bg-white/15 text-white"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/8"
+                  ? "bg-[#0068DE] text-white shadow-sm"
+                  : "text-white/55 hover:text-white hover:bg-white/10"
               }`}
             >
-              <div className="w-[14px] h-[14px] shrink-0">
+              <div className="w-[15px] h-[15px] shrink-0">
                 {tool.icon}
               </div>
-              <span className="text-[11px] font-['Figtree',sans-serif] whitespace-nowrap leading-none">
+              <span className="whitespace-nowrap leading-none">
                 {tool.label}
               </span>
             </button>
@@ -76,16 +76,16 @@ function StageButton({ label, active, disabled, onClick, icon }: {
       onClick={onClick}
       disabled={disabled}
       title={disabled ? "Draw a roof first" : label}
-      className={`flex flex-col items-center gap-1.5 px-3.5 py-1.5 rounded-md transition-all min-w-[64px] ${
+      className={`flex flex-col items-center justify-center gap-1.5 h-full px-3 rounded-md transition-all min-w-[54px] text-[11px] font-medium font-['Figtree',sans-serif] ${
         disabled
-          ? "text-white/20 cursor-not-allowed"
+          ? "text-white/25 cursor-not-allowed"
           : active
-          ? "bg-[#0068DE] text-white shadow"
-          : "text-white/55 hover:text-white/85 hover:bg-white/8"
+          ? "bg-white/15 text-white"
+          : "text-white/55 hover:text-white hover:bg-white/8"
       }`}
     >
       <div className="w-[15px] h-[15px] shrink-0">{icon}</div>
-      <span className="text-[11px] font-['Figtree',sans-serif] font-semibold whitespace-nowrap leading-none">{label}</span>
+      <span className="whitespace-nowrap leading-none">{label}</span>
     </button>
   );
 }
