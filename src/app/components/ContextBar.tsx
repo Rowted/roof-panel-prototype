@@ -109,13 +109,7 @@ function HeightIdleActions({ onDelete }: { onDelete: () => void }) {
         Select
       </BarBtn>
       <div className="w-px h-5 bg-white/15" />
-      <BarBtn title="Delete" danger onClick={onDelete}>
-        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
-          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
-        Delete
-      </BarBtn>
+      <DeleteButton onClick={onDelete} />
     </div>
   );
 }
@@ -178,6 +172,50 @@ function HeightAdjInput({ label, value, color, arrowUp, onChange }: {
   );
 }
 
+function BackspaceIcon() {
+  return (
+    <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
+      <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function useBackspaceHeld() {
+  const [held, setHeld] = useState(false);
+  useEffect(() => {
+    const isDel = (k: string) => k === "Backspace" || k === "Delete";
+    const onDown = (e: KeyboardEvent) => { if (isDel(e.key)) setHeld(true); };
+    const onUp = (e: KeyboardEvent) => { if (isDel(e.key)) setHeld(false); };
+    const onBlur = () => setHeld(false);
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup", onUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup", onUp);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
+  return held;
+}
+
+function DeleteButton({ onClick, label = "Delete" }: { onClick: () => void; label?: string | null }) {
+  const held = useBackspaceHeld();
+  return (
+    <button
+      onClick={onClick}
+      title="Delete (Backspace)"
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all font-['Figtree',sans-serif] text-[12px] font-medium ${
+        held ? "bg-red-400/15 text-red-400" : "text-white/40 hover:text-red-400 hover:bg-red-400/10"
+      }`}
+    >
+      <BackspaceIcon />
+      {label && <span>{label}</span>}
+    </button>
+  );
+}
+
 function BarBtn({ title, onClick, danger, children }: {
   title: string; onClick?: () => void; danger?: boolean; children: React.ReactNode;
 }) {
@@ -214,16 +252,7 @@ function RoofEditActions({ count, onDuplicate, onDelete }: { count: number; onDu
         Duplicate
       </button>
       <div className="w-px h-5 bg-white/15" />
-      <button
-        onClick={onDelete}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
-      >
-        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
-          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
-        Delete
-      </button>
+      <DeleteButton onClick={onDelete} />
       <div className="w-px h-5 bg-white/15" />
       <ShiftHint />
     </div>
@@ -289,14 +318,7 @@ function PanelSelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void
         Duplicate
       </BarBtn>
       <div className="w-px h-5 bg-white/15" />
-      {/* Delete */}
-      <BarBtn title="Delete selected panel field" danger onClick={onDelete}>
-        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
-          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
-        Delete
-      </BarBtn>
+      <DeleteButton onClick={onDelete} />
     </div>
   );
 }
@@ -363,12 +385,7 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
 
       <div className="w-px h-5 bg-white/15 shrink-0" />
 
-      <BarBtn title="Delete" danger onClick={onDelete}>
-        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
-          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
-      </BarBtn>
+      <DeleteButton onClick={onDelete} label={null} />
     </div>
   );
 }

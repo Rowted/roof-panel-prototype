@@ -71,6 +71,21 @@ export default function App() {
     }
   }, [activeSubTool]);
 
+  // Backspace / Delete removes the current selection (context-dependent)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Backspace" && e.key !== "Delete") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (sunPathOpen) return;
+      if (activeSubTool === "obstacle" && selectedObstacleId) { e.preventDefault(); handleDeleteObstacle(selectedObstacleId); return; }
+      if (activeTool === "panel-field" && selectedPanelFieldId) { e.preventDefault(); handleDeletePanelField(selectedPanelFieldId); return; }
+      if (allSelectedRoofIds.length > 0) { e.preventDefault(); handleDeleteSelectedRoofs(); return; }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeTool, activeSubTool, selectedObstacleId, selectedPanelFieldId, allSelectedRoofIds, sunPathOpen]);
+
   const handleRoofDrawn = (roofData: RoofData, points: { x: number; y: number }[]) => {
     setRoofs((prev) => [...prev, roofData]);
     setDrawnRoofs((prev) => [...prev, { id: roofData.id, points }]);
