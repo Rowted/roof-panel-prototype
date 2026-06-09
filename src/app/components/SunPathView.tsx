@@ -7,7 +7,7 @@ interface SunPathViewProps {
 // Mockup full-screen sun-path page. Drop the screenshot at public/sun-path.jpg
 // to replace the placeholder background.
 export function SunPathView({ onClose }: SunPathViewProps) {
-  const img = import.meta.env.BASE_URL + "sun-path.jpg";
+  const img = import.meta.env.BASE_URL + "sun-path.jpeg";
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#3b4a2e]">
