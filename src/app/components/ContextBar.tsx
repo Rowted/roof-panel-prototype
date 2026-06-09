@@ -110,8 +110,9 @@ function HeightIdleActions({ onDelete }: { onDelete: () => void }) {
       </BarBtn>
       <div className="w-px h-5 bg-white/15" />
       <BarBtn title="Delete" danger onClick={onDelete}>
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M1.5 3.5h10M4.5 3.5V2.5h4v1M3 3.5l.8 7.5h5.4L10 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
+          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
         Delete
       </BarBtn>
@@ -217,8 +218,9 @@ function RoofEditActions({ count, onDuplicate, onDelete }: { count: number; onDu
         onClick={onDelete}
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
       >
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M1.5 3.5h10M4.5 3.5V2.5h4v1M3 3.5l.8 7.5h5.4L10 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
+          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
         Delete
       </button>
@@ -250,7 +252,7 @@ function ShiftHint() {
           ? "bg-[#0068DE] border-[#0068DE] text-white"
           : "bg-white/10 border-white/15 text-white/60"
       }`}>⇧ Shift</kbd>
-      multi-select roofs &amp; nodes
+      multi-select
     </span>
   );
 }
@@ -289,8 +291,9 @@ function PanelSelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void
       <div className="w-px h-5 bg-white/15" />
       {/* Delete */}
       <BarBtn title="Delete selected panel field" danger onClick={onDelete}>
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M1.5 3.5h10M4.5 3.5V2.5h4v1M3 3.5l.8 7.5h5.4L10 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
+          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
         Delete
       </BarBtn>
@@ -361,8 +364,9 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
       <div className="w-px h-5 bg-white/15 shrink-0" />
 
       <BarBtn title="Delete" danger onClick={onDelete}>
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M1.5 3.5h10M4.5 3.5V2.5h4v1M3 3.5l.8 7.5h5.4L10 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="15" height="13" viewBox="0 0 16 14" fill="none">
+          <path d="M5.5 1.5H14a1 1 0 011 1v9a1 1 0 01-1 1H5.5L1 7L5.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          <path d="M8 5L11.5 9M11.5 5L8 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
       </BarBtn>
     </div>
