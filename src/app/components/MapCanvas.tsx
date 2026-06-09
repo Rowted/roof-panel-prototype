@@ -743,10 +743,22 @@ export function MapCanvas({
       return;
     }
 
-    if (activeTool === "panel-field" && drawingPoints.length >= 3) {
-      const targetRoof = drawnRoofs.find((r) => r.id === selectedRoofId)
-        ?? drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
-      if (targetRoof) finishPanelField(drawingPoints, targetRoof.id);
+    if (activeTool === "panel-field" && activeSubTool === "draw-panel") {
+      // Finish an in-progress panel field
+      if (drawingPoints.length >= 3) {
+        const targetRoof = drawnRoofs.find((r) => r.id === selectedRoofId)
+          ?? drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
+        if (targetRoof) finishPanelField(drawingPoints, targetRoof.id);
+        return;
+      }
+      // Otherwise: double-click a roof to auto-fill it with panels
+      const target = drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
+      if (target) {
+        setDrawingPoints([]);
+        setMousePos(null);
+        onDrawingMeasure(null);
+        onFillRoofWithPanels(target.id);
+      }
     }
   };
 
