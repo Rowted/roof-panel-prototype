@@ -11,6 +11,7 @@ export interface DrawnPanelField { id: string; roofId: string; points: Point[]; 
 export interface ObstacleData { id: string; roofId: string; points: Point[]; parallel: boolean; height: number; }
 
 interface MapCanvasProps {
+  mode: "basic" | "pro";
   activeTool: "roof" | "panel-field";
   activeSubTool?: string;
   onRoofDrawn: (roof: RoofData, points: Point[]) => void;
@@ -387,7 +388,7 @@ type DragState = {
 const VERTEX_HIT_RADIUS = 10;
 
 export function MapCanvas({
-  activeTool, activeSubTool, onRoofDrawn, onPanelFieldDrawn, onFillRoofWithPanels,
+  mode, activeTool, activeSubTool, onRoofDrawn, onPanelFieldDrawn, onFillRoofWithPanels,
   onDeleteRoof, onDuplicateRoof, onDrawingMeasure, onHeightAdjusting, onUpdateRoofPoints, onUpdateRoofHeightDrag,
   drawnRoofs, drawnPanelFields, roofs = [], selectedRoofId, selectedPanelFieldId, onSelectRoof,
   obstacles, selectedObstacleId, onObstacleDrawn, onSelectObstacle,

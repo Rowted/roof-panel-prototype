@@ -9,7 +9,7 @@ import { Import3DOverlay } from "./components/Import3DOverlay";
 import { SunPathView } from "./components/SunPathView";
 
 export default function App() {
-  const [mode, setMode] = useState<"basic" | "pro">("pro");
+  const [mode, setMode] = useState<"basic" | "pro">("basic");
   const [activeTool, setActiveTool] = useState<"roof" | "panel-field">("roof");
   const [activeSubTool, setActiveSubTool] = useState("draw-roof");
 
@@ -256,6 +256,7 @@ export default function App() {
         />
         <div className="relative flex-1 overflow-hidden">
           <MapCanvas
+            mode={mode}
             activeTool={activeTool}
             activeSubTool={activeSubTool}
             drawnRoofs={drawnRoofs}
@@ -286,6 +287,7 @@ export default function App() {
             onHeightAdjusting={setIsAdjustingHeight}
           />
           <ContextBar
+            mode={mode}
             activeSubTool={activeSubTool}
             drawingMeasure={drawingMeasure}
             isAdjustingHeight={isAdjustingHeight}
@@ -319,6 +321,7 @@ export default function App() {
             shadingValue={shadingValue}
           />
           <ToolDock
+            mode={mode}
             activeTool={activeTool}
             activeSubTool={activeSubTool}
             onSubToolChange={setActiveSubTool}

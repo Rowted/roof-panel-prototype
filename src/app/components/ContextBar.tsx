@@ -8,6 +8,7 @@ interface RoofHeightData {
 }
 
 interface ContextBarProps {
+  mode: "basic" | "pro";
   activeSubTool: string;
   drawingMeasure: number | null;
   isAdjustingHeight: boolean;
@@ -34,7 +35,7 @@ interface ContextBarProps {
 
 const CONTEXT_TOOLS = ["draw-roof", "draw-panel", "safety-margins", "roof-height", "obstacle", "shading-analysis"];
 
-export function ContextBar({ activeSubTool, drawingMeasure, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
+export function ContextBar({ mode: _mode, activeSubTool, drawingMeasure, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
   const isDrawing = (activeSubTool === "draw-roof" || activeSubTool === "draw-panel" || activeSubTool === "obstacle") && drawingMeasure !== null;
   if (!CONTEXT_TOOLS.includes(activeSubTool) && !isDrawing) return null;
 
