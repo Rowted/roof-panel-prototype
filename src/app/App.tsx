@@ -294,6 +294,7 @@ export default function App() {
             activeTool={activeTool}
             activeSubTool={activeSubTool}
             onSubToolChange={setActiveSubTool}
+            onToolChange={(t) => { setActiveTool(t); setActiveSubTool(t === "roof" ? "draw-roof" : "draw-panel"); }}
             hasRoof={roofs.length > 0}
             hasPanelField={panelFields.length > 0}
           />

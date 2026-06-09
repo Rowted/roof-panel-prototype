@@ -5,16 +5,35 @@ interface ToolDockProps {
   activeTool: "roof" | "panel-field";
   activeSubTool: string;
   onSubToolChange: (tool: string) => void;
+  onToolChange: (tool: "roof" | "panel-field") => void;
   hasRoof?: boolean;
   hasPanelField?: boolean;
 }
 
-export function ToolDock({ activeTool, activeSubTool, onSubToolChange, hasRoof = false, hasPanelField = false }: ToolDockProps) {
+export function ToolDock({ activeTool, activeSubTool, onSubToolChange, onToolChange, hasRoof = false, hasPanelField = false }: ToolDockProps) {
   const tools = activeTool === "roof" ? ROOF_TOOLS : PANEL_TOOLS;
 
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
       <div className="flex items-center gap-1 bg-[rgba(21,27,30,0.96)] rounded-xl px-3 py-2 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm">
+        {/* Stage switch — Building / Panels */}
+        <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 mr-1">
+          <StageButton
+            label="Building"
+            active={activeTool === "roof"}
+            onClick={() => onToolChange("roof")}
+            icon={<StageHomeIcon />}
+          />
+          <StageButton
+            label="Panels"
+            active={activeTool === "panel-field"}
+            disabled={!hasRoof}
+            onClick={() => hasRoof && onToolChange("panel-field")}
+            icon={<StageGridIcon />}
+          />
+        </div>
+        <div className="w-px h-9 bg-white/15 mx-1.5 shrink-0" />
+
         {tools.map((tool) => {
           const isActive = activeSubTool === tool.id;
           const isLocked =
@@ -48,6 +67,44 @@ export function ToolDock({ activeTool, activeSubTool, onSubToolChange, hasRoof =
     </div>
   );
 }
+
+function StageButton({ label, active, disabled, onClick, icon }: {
+  label: string; active: boolean; disabled?: boolean; onClick: () => void; icon: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={disabled ? "Draw a roof first" : label}
+      className={`flex flex-col items-center gap-1.5 px-3.5 py-1.5 rounded-md transition-all min-w-[64px] ${
+        disabled
+          ? "text-white/20 cursor-not-allowed"
+          : active
+          ? "bg-[#0068DE] text-white shadow"
+          : "text-white/55 hover:text-white/85 hover:bg-white/8"
+      }`}
+    >
+      <div className="w-[15px] h-[15px] shrink-0">{icon}</div>
+      <span className="text-[11px] font-['Figtree',sans-serif] font-semibold whitespace-nowrap leading-none">{label}</span>
+    </button>
+  );
+}
+
+const StageHomeIcon = () => (
+  <svg className="size-full" viewBox="0 0 16 16" fill="none">
+    <path d="M2 7.5L8 2L14 7.5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M3.5 6.5V13.5H12.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+  </svg>
+);
+
+const StageGridIcon = () => (
+  <svg className="size-full" viewBox="0 0 16 16" fill="none">
+    <rect x="2" y="2" width="5" height="5" rx="0.6" stroke="currentColor" strokeWidth="1.3" />
+    <rect x="9" y="2" width="5" height="5" rx="0.6" stroke="currentColor" strokeWidth="1.3" />
+    <rect x="2" y="9" width="5" height="5" rx="0.6" stroke="currentColor" strokeWidth="1.3" />
+    <rect x="9" y="9" width="5" height="5" rx="0.6" stroke="currentColor" strokeWidth="1.3" />
+  </svg>
+);
 
 // ── SVG icon helpers ──────────────────────────────────────────────────────────
 
