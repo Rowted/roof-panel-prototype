@@ -21,13 +21,13 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
       <div className="flex items-center h-6 rounded overflow-hidden border border-white/20 mr-2">
         <button
           onClick={() => onModeChange("basic")}
-          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${mode === "basic" ? "bg-white text-[#263238]" : "text-[#555d61] hover:text-white/80"}`}
+          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${mode === "basic" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"}`}
         >
           Basic
         </button>
         <button
           onClick={() => onModeChange("pro")}
-          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${mode === "pro" ? "bg-white text-[#263238]" : "text-[#555d61] hover:text-white/80"}`}
+          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${mode === "pro" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"}`}
         >
           Pro
         </button>
