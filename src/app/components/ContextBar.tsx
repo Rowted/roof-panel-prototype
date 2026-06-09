@@ -41,7 +41,7 @@ export function ContextBar({ activeSubTool, drawingMeasure, isAdjustingHeight, s
   const hasSelection = !!selectedRoofId;
 
   return (
-    <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+    <div className="absolute bottom-[94px] left-1/2 -translate-x-1/2 z-30 pointer-events-none">
       <div
         key={activeSubTool + (hasSelection ? "-active" : "-idle") + (isAdjustingHeight ? "-adj" : "")}
         className="pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-150"
