@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { Layers, LocateFixed, Trash2, Plus, Minus } from "lucide-react";
 import mapImg from "../../imports/SCR-20260603-dz6.jpeg";
 import { RoofData, PanelFieldData, RoofMargins, DEFAULT_MARGINS } from "./Sidebar";
+import { MiniPreview3D } from "./MiniPreview3D";
 
 interface Point { x: number; y: number; }
 
@@ -36,6 +38,7 @@ interface MapCanvasProps {
   onShadingPick: (value: number) => void;
   multiRoofIds: string[];
   onShiftSelectRoof: (id: string) => void;
+  onResetGeometry: () => void;
 }
 
 function polygonArea(points: Point[]): number {
@@ -390,7 +393,7 @@ export function MapCanvas({
   obstacles, selectedObstacleId, onObstacleDrawn, onSelectObstacle,
   onSelectPanelField, onUpdatePanelFieldPoints,
   shadingSelectorActive, onShadingPick,
-  multiRoofIds, onShiftSelectRoof,
+  multiRoofIds, onShiftSelectRoof, onResetGeometry,
 }: MapCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1001,10 +1004,28 @@ export function MapCanvas({
         <span>| Datenquelle: <span className="text-[#0078a8]">geo.admin.ch</span></span>
       </div>
 
-      {/* Zoom controls */}
-      <div className="absolute right-4 flex flex-col gap-1 z-10" style={{ top: 80 }}>
-        <button className="w-8 h-8 bg-white shadow-md rounded flex items-center justify-center text-[#263238] hover:bg-gray-50 text-lg leading-none">+</button>
-        <button className="w-8 h-8 bg-white shadow-md rounded flex items-center justify-center text-[#263238] hover:bg-gray-50 text-lg leading-none">−</button>
+      {/* 3D preview (top-right) */}
+      <MiniPreview3D />
+
+      {/* Map controls (bottom-right) */}
+      <div className="absolute right-4 bottom-10 z-30 flex flex-col gap-2 items-center">
+        <div className="flex flex-col gap-1.5">
+          <CtrlBtn title="Map layers"><Layers size={16} /></CtrlBtn>
+          <CtrlBtn title="Center view"><LocateFixed size={16} /></CtrlBtn>
+          <CtrlBtn
+            title="Reset all geometry"
+            danger
+            onClick={() => {
+              if (window.confirm("Reset all geometry? This removes every roof, panel field and obstacle.")) onResetGeometry();
+            }}
+          >
+            <Trash2 size={16} />
+          </CtrlBtn>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <CtrlBtn title="Zoom in"><Plus size={16} /></CtrlBtn>
+          <CtrlBtn title="Zoom out"><Minus size={16} /></CtrlBtn>
+        </div>
       </div>
 
       {/* Drawing canvas */}
@@ -1026,6 +1047,28 @@ export function MapCanvas({
         </div>
       )}
 
+    </div>
+  );
+}
+
+function CtrlBtn({ title, onClick, danger, children }: {
+  title: string; onClick?: () => void; danger?: boolean; children: React.ReactNode;
+}) {
+  return (
+    <div className="relative group">
+      <button
+        onClick={onClick}
+        aria-label={title}
+        className={`w-9 h-9 bg-white rounded-md shadow-md flex items-center justify-center transition-colors ${
+          danger ? "text-[#dc4a44] hover:bg-red-50" : "text-[#263238] hover:bg-gray-100"
+        }`}
+      >
+        {children}
+      </button>
+      {/* Tooltip (left of button) */}
+      <div className="absolute right-full top-1/2 -translate-y-1/2 mr-2 px-2.5 py-1.5 rounded-md bg-[#0b0f11] border border-white/10 text-white text-[12px] font-['Figtree',sans-serif] whitespace-nowrap shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
+        {title}
+      </div>
     </div>
   );
 }

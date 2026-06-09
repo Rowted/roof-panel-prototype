@@ -196,6 +196,18 @@ export default function App() {
     setSelectedPanelFieldId(newId);
   };
 
+  const handleResetGeometry = () => {
+    setRoofs([]);
+    setDrawnRoofs([]);
+    setPanelFields([]);
+    setDrawnPanelFields([]);
+    setObstacles([]);
+    setSelectedRoofId(null);
+    setMultiRoofIds([]);
+    setSelectedPanelFieldId(null);
+    setSelectedObstacleId(null);
+  };
+
   const totalPanels = panelFields.reduce((sum, p) => sum + p.panelCount, 0);
   const totalKwp = totalPanels * 0.26;
 
@@ -253,6 +265,7 @@ export default function App() {
             onUpdatePanelFieldPoints={handleUpdatePanelFieldPoints}
             shadingSelectorActive={shadingSelectorActive}
             onShadingPick={setShadingValue}
+            onResetGeometry={handleResetGeometry}
             onUpdateRoofHeightDrag={handleUpdateRoofHeightDrag}
             onDrawingMeasure={setDrawingMeasure}
             onHeightAdjusting={setIsAdjustingHeight}
