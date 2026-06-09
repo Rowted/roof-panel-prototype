@@ -46,20 +46,24 @@ export function ToolDock({ activeTool, activeSubTool, onSubToolChange, onToolCha
               onClick={() => !isLocked && onSubToolChange(tool.id)}
               title={tool.label}
               disabled={isLocked}
-              className={`flex flex-col items-center justify-center gap-1.5 h-12 px-4 rounded-lg transition-all min-w-[60px] text-[11px] font-medium font-['Figtree',sans-serif] ${
+              className={`relative flex flex-col items-center justify-center gap-1.5 h-12 px-4 rounded-lg transition-all min-w-[60px] text-[11px] font-medium font-['Figtree',sans-serif] ${
                 isLocked
                   ? "text-white/25 cursor-not-allowed"
                   : isActive
-                  ? "bg-[#0068DE] text-white shadow-sm"
-                  : "text-white/55 hover:text-white hover:bg-white/10"
+                  ? "bg-white/12 text-white"
+                  : "text-white/55 hover:text-white hover:bg-white/8"
               }`}
             >
-              <div className="w-[15px] h-[15px] shrink-0">
+              <div className={`w-[15px] h-[15px] shrink-0 ${isActive ? "text-[#5aabff]" : ""}`}>
                 {tool.icon}
               </div>
               <span className="whitespace-nowrap leading-none">
                 {tool.label}
               </span>
+              {/* Sub-selection indicator (ties to the blue stage above) */}
+              {isActive && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-[2px] w-4 rounded-full bg-[#5aabff]" />
+              )}
             </button>
           );
         })}
@@ -76,11 +80,11 @@ function StageButton({ label, active, disabled, onClick, icon }: {
       onClick={onClick}
       disabled={disabled}
       title={disabled ? "Draw a roof first" : label}
-      className={`flex flex-col items-center justify-center gap-1.5 h-full px-3 rounded-md transition-all min-w-[54px] text-[11px] font-medium font-['Figtree',sans-serif] ${
+      className={`flex flex-col items-center justify-center gap-1.5 h-full px-3 rounded-md transition-all min-w-[54px] text-[11px] font-semibold font-['Figtree',sans-serif] ${
         disabled
           ? "text-white/25 cursor-not-allowed"
           : active
-          ? "bg-white/15 text-white"
+          ? "bg-[#0068DE] text-white shadow-sm"
           : "text-white/55 hover:text-white hover:bg-white/8"
       }`}
     >
