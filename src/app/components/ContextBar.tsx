@@ -310,6 +310,11 @@ function MeasureDisplay({ mm }: { mm: number }) {
         <span className="text-white text-[13px] font-['Figtree',sans-serif] font-semibold tabular-nums">{formatted}</span>
         <span className="text-white/50 text-[12px] font-['Figtree',sans-serif]">mm</span>
       </div>
+      <span className="w-px h-5 bg-white/15" />
+      <span className="flex items-center gap-1.5 text-white/40 text-[11px] font-['Figtree',sans-serif] whitespace-nowrap">
+        <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-white/60 text-[10px] font-medium">Esc</kbd>
+        to cancel
+      </span>
     </div>
   );
 }
