@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  ChevronDown, ChevronRight, MousePointer2, Home, Grid3X3,
+  ChevronDown, ChevronRight, MousePointer2, Grid3X3,
   Pencil, X, Info,
 } from "lucide-react";
 
@@ -74,44 +74,6 @@ export function Sidebar({
 
   return (
     <div className="w-[250px] shrink-0 bg-[#263238] flex flex-col overflow-y-auto">
-      {/* Tool switcher */}
-      <div className="px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
-        <div className="flex gap-2">
-          <button
-            onClick={() => onToolChange("roof")}
-            className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-lg border transition-all font-['Figtree',sans-serif] ${
-              activeTool === "roof"
-                ? "bg-[#0068DE] border-[#0068DE] text-white shadow-lg"
-                : "bg-white/5 border-white/15 text-white/50 hover:bg-white/10 hover:text-white/80"
-            }`}
-          >
-            <Home size={18} />
-            <span className="text-[12px] font-semibold leading-none">Building</span>
-          </button>
-
-          <div className="flex-1 relative group">
-            <button
-              onClick={() => roofs.length > 0 && onToolChange("panel-field")}
-              className={`w-full flex flex-col items-center gap-2 py-3 rounded-lg border transition-all font-['Figtree',sans-serif] ${
-                activeTool === "panel-field"
-                  ? "bg-[#0068DE] border-[#0068DE] text-white shadow-lg"
-                  : roofs.length === 0
-                  ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
-                  : "bg-white/5 border-white/15 text-white/50 hover:bg-white/10 hover:text-white/80"
-              }`}
-            >
-              <Grid3X3 size={18} />
-              <span className="text-[12px] font-semibold leading-none">Panels</span>
-            </button>
-            {roofs.length === 0 && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-44 bg-[#151b1e] text-white/80 text-[11px] font-['Figtree',sans-serif] px-3 py-2 rounded shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50 text-center leading-snug">
-                Draw a roof surface first
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {roofs.length === 0 ? (
         <EmptyState mode="draw-roof" />
       ) : (
