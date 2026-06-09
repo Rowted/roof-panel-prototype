@@ -16,7 +16,7 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
   const [showMeasurements, setShowMeasurements] = useState(false);
 
   return (
-    <div className="flex items-center h-10 bg-[rgba(21,27,30,0.98)] px-2 shrink-0 z-10">
+    <div className="relative flex items-center h-10 bg-[rgba(21,27,30,0.98)] px-2 shrink-0 z-50">
       {/* Mode toggle */}
       <div className="flex items-center h-6 rounded overflow-hidden border border-white/20 mr-2">
         <button
