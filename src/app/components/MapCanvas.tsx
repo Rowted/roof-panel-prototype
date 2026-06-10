@@ -1161,8 +1161,8 @@ export function MapCanvas({
         <span>| Datenquelle: <span className="text-[#0078a8]">geo.admin.ch</span></span>
       </div>
 
-      {/* 3D preview (top-right) */}
-      <MiniPreview3D />
+      {/* 3D preview (top-right) — Pro only */}
+      {mode === "pro" && <MiniPreview3D />}
 
       {/* Map controls (bottom-right) */}
       <div className="absolute right-4 bottom-10 z-30 flex flex-col gap-2 items-center">

@@ -73,18 +73,22 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
 
       <div className="w-px h-6 bg-white/20 mx-1.5" />
 
-      {/* Show sun path (replaces the 2D/3D switch) */}
-      <button
-        onClick={onToggleSunPath}
-        className={`group relative flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
-          sunPathOpen ? "bg-[#0068DE] text-white" : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
-        }`}
-      >
-        <Sun size={14} />
-        Sun path
-      </button>
+      {/* Show sun path — Pro only */}
+      {mode === "pro" && (
+        <>
+          <button
+            onClick={onToggleSunPath}
+            className={`group relative flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
+              sunPathOpen ? "bg-[#0068DE] text-white" : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
+            }`}
+          >
+            <Sun size={14} />
+            Sun path
+          </button>
 
-      <div className="w-px h-6 bg-white/20 mx-2" />
+          <div className="w-px h-6 bg-white/20 mx-2" />
+        </>
+      )}
 
       {/* Project totals */}
       <div className="text-white font-['Figtree',sans-serif] text-[13px] font-semibold tabular-nums pr-1 whitespace-nowrap">
