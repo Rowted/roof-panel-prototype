@@ -93,14 +93,18 @@ export function ContextBar({ mode, activeSubTool, drawingMeasure, isAdjustingHei
   );
 }
 
+// Lighter container that matches the active roof-height tool's tint so the
+// contextual actions read as "belonging" to that selected tool.
+const HEIGHT_BAR = "flex items-center gap-2 bg-[rgba(56,62,66,0.97)] border border-white/20 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm";
+
 function HeightIdleActions({ count, onDelete }: { count: number; onDelete: () => void }) {
   return (
-    <div className="flex items-center gap-2 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
-      <span className="text-white/50 text-[12px] font-['Figtree',sans-serif] pr-1">
+    <div className={HEIGHT_BAR}>
+      <span className="text-white/75 text-[12px] font-['Figtree',sans-serif] pr-1">
         {count} roof{count > 1 ? "s" : ""} selected
       </span>
-      <div className="w-px h-5 bg-white/15" />
-      <BarBtn title="Flatten everything">
+      <div className="w-px h-5 bg-white/25" />
+      <BarBtn title="Flatten everything" light>
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M1 6.5H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
           <path d="M3 4L6.5 1L10 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -108,10 +112,10 @@ function HeightIdleActions({ count, onDelete }: { count: number; onDelete: () =>
         </svg>
         Flatten everything
       </BarBtn>
-      <div className="w-px h-5 bg-white/15" />
-      <DeleteButton onClick={onDelete} />
-      <div className="w-px h-5 bg-white/15" />
-      <ShiftHint />
+      <div className="w-px h-5 bg-white/25" />
+      <DeleteButton onClick={onDelete} light />
+      <div className="w-px h-5 bg-white/25" />
+      <ShiftHint light />
     </div>
   );
 }
@@ -121,23 +125,23 @@ function HeightAdjustingControls({ height, onUpdate }: {
   onUpdate: (h: Partial<RoofHeightData>) => void;
 }) {
   return (
-    <div className="flex items-center gap-2 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+    <div className={HEIGHT_BAR}>
       {/* Ridge height */}
       <HeightAdjInput label="Ridge" value={height.ridgeHeight} color="#ef4444" arrowUp onChange={(v) => onUpdate({ ridgeHeight: v })} />
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
       {/* Eave height */}
       <HeightAdjInput label="Eave" value={height.eaveHeight} color="#f59e0b" arrowUp={false} onChange={(v) => onUpdate({ eaveHeight: v })} />
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
       {/* Split selected edges */}
-      <BarBtn title="Split selected edges">
+      <BarBtn title="Split selected edges" light>
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M1 6.5H5M8 6.5H12M6.5 1V5M6.5 8V12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
         Split edges
       </BarBtn>
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
       {/* Equalize */}
-      <BarBtn title="Equalize all heights">
+      <BarBtn title="Equalize all heights" light>
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M1 4.5H12M1 8.5H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
           <path d="M4 1.5L6.5 4.5L9 1.5M4 11.5L6.5 8.5L9 11.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -202,14 +206,14 @@ function useBackspaceHeld() {
   return held;
 }
 
-function DeleteButton({ onClick, label = "Delete" }: { onClick: () => void; label?: string | null }) {
+function DeleteButton({ onClick, label = "Delete", light }: { onClick: () => void; label?: string | null; light?: boolean }) {
   const held = useBackspaceHeld();
   return (
     <button
       onClick={onClick}
       title="Delete (Backspace)"
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all font-['Figtree',sans-serif] text-[12px] font-medium ${
-        held ? "bg-red-400/15 text-red-400" : "text-white/40 hover:text-red-400 hover:bg-red-400/10"
+        held ? "bg-red-400/15 text-red-400" : `${light ? "text-white/70" : "text-white/40"} hover:text-red-400 hover:bg-red-400/10`
       }`}
     >
       <BackspaceIcon />
@@ -218,8 +222,8 @@ function DeleteButton({ onClick, label = "Delete" }: { onClick: () => void; labe
   );
 }
 
-function BarBtn({ title, onClick, danger, children }: {
-  title: string; onClick?: () => void; danger?: boolean; children: React.ReactNode;
+function BarBtn({ title, onClick, danger, light, children }: {
+  title: string; onClick?: () => void; danger?: boolean; light?: boolean; children: React.ReactNode;
 }) {
   return (
     <button
@@ -228,7 +232,7 @@ function BarBtn({ title, onClick, danger, children }: {
       className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors font-['Figtree',sans-serif] text-[12px] font-medium ${
         danger
           ? "text-white/40 hover:text-red-400 hover:bg-red-400/10"
-          : "text-white/50 hover:text-white hover:bg-white/10"
+          : `${light ? "text-white/80" : "text-white/50"} hover:text-white hover:bg-white/10`
       }`}
     >
       {children}
@@ -315,7 +319,7 @@ function BasicRoofActions({ margins, onUpdateMargins, onDuplicate, onDelete }: {
   );
 }
 
-function ShiftHint() {
+function ShiftHint({ light }: { light?: boolean }) {
   const [down, setDown] = useState(false);
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => { if (e.key === "Shift") setDown(true); };
@@ -331,11 +335,11 @@ function ShiftHint() {
     };
   }, []);
   return (
-    <span className={`flex items-center gap-1.5 text-[11px] font-['Figtree',sans-serif] transition-colors ${down ? "text-white/70" : "text-white/35"}`}>
+    <span className={`flex items-center gap-1.5 text-[11px] font-['Figtree',sans-serif] transition-colors ${down ? "text-white/80" : (light ? "text-white/55" : "text-white/35")}`}>
       <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-medium border transition-colors ${
         down
           ? "bg-[#0068DE] border-[#0068DE] text-white"
-          : "bg-white/10 border-white/15 text-white/60"
+          : (light ? "bg-white/15 border-white/25 text-white/70" : "bg-white/10 border-white/15 text-white/60")
       }`}>⇧ Shift</kbd>
       multi-select
     </span>
