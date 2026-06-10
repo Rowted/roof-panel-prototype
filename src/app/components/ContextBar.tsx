@@ -93,13 +93,13 @@ export function ContextBar({ mode, activeSubTool, drawingMeasure, isAdjustingHei
   );
 }
 
-// Lighter container that matches the active roof-height tool's tint so the
-// contextual actions read as "belonging" to that selected tool.
-const HEIGHT_BAR = "flex items-center gap-2 bg-[rgba(56,62,66,0.97)] border border-white/20 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm";
+// Lighter container that matches the active tool's tint so contextual
+// actions read as "belonging" to the selected tool.
+const TOOLBAR = "flex items-center gap-2 bg-[rgba(56,62,66,0.97)] border border-white/20 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm";
 
 function HeightIdleActions({ count, onDelete }: { count: number; onDelete: () => void }) {
   return (
-    <div className={HEIGHT_BAR}>
+    <div className={TOOLBAR}>
       <span className="text-white/75 text-[12px] font-['Figtree',sans-serif] pr-1">
         {count} roof{count > 1 ? "s" : ""} selected
       </span>
@@ -125,7 +125,7 @@ function HeightAdjustingControls({ height, onUpdate }: {
   onUpdate: (h: Partial<RoofHeightData>) => void;
 }) {
   return (
-    <div className={HEIGHT_BAR}>
+    <div className={TOOLBAR}>
       {/* Ridge height */}
       <HeightAdjInput label="Ridge" value={height.ridgeHeight} color="#ef4444" arrowUp onChange={(v) => onUpdate({ ridgeHeight: v })} />
       <div className="w-px h-5 bg-white/25" />
@@ -242,14 +242,14 @@ function BarBtn({ title, onClick, danger, light, children }: {
 
 function RoofEditActions({ count, onDuplicate, onDelete }: { count: number; onDuplicate: () => void; onDelete: () => void }) {
   return (
-    <div className="flex items-center gap-2 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
-      <span className="text-white/50 text-[12px] font-['Figtree',sans-serif] pr-1">
+    <div className={TOOLBAR}>
+      <span className="text-white/75 text-[12px] font-['Figtree',sans-serif] pr-1">
         {count} roof{count > 1 ? "s" : ""} selected
       </span>
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
       <button
         onClick={onDuplicate}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/15 border border-white/20 text-white/80 hover:text-white hover:bg-white/25 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
       >
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <rect x="1" y="4" width="8" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
@@ -257,10 +257,10 @@ function RoofEditActions({ count, onDuplicate, onDelete }: { count: number; onDu
         </svg>
         Duplicate
       </button>
-      <div className="w-px h-5 bg-white/15" />
-      <DeleteButton onClick={onDelete} />
-      <div className="w-px h-5 bg-white/15" />
-      <ShiftHint />
+      <div className="w-px h-5 bg-white/25" />
+      <DeleteButton onClick={onDelete} light />
+      <div className="w-px h-5 bg-white/25" />
+      <ShiftHint light />
     </div>
   );
 }
@@ -274,10 +274,10 @@ function BasicRoofActions({ margins, onUpdateMargins, onDuplicate, onDelete }: {
   const [focused, setFocused] = useState(false);
   const value = margins?.top ?? 0;
   return (
-    <div className="flex items-center gap-3 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+    <div className={TOOLBAR}>
       {/* Single uniform margin */}
       <div className="flex items-center gap-2">
-        <span className="text-white/60 text-[12px] font-['Figtree',sans-serif]">Margin</span>
+        <span className="text-white/75 text-[12px] font-['Figtree',sans-serif]">Margin</span>
         <div className="flex items-center gap-1">
           <input
             type="number"
@@ -289,17 +289,17 @@ function BasicRoofActions({ margins, onUpdateMargins, onDuplicate, onDelete }: {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             className="w-16 h-7 bg-transparent border rounded px-2 text-white text-[12px] font-['Figtree',sans-serif] outline-none text-center transition-colors"
-            style={{ borderColor: focused ? "#0068DE" : "rgba(255,255,255,0.2)" }}
+            style={{ borderColor: focused ? "#0068DE" : "rgba(255,255,255,0.3)" }}
           />
-          <span className="text-white/40 text-[11px] font-['Figtree',sans-serif]">mm</span>
+          <span className="text-white/50 text-[11px] font-['Figtree',sans-serif]">mm</span>
         </div>
       </div>
 
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
 
       <button
         onClick={onDuplicate}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/15 border border-white/20 text-white/80 hover:text-white hover:bg-white/25 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
       >
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <rect x="1" y="4" width="8" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
@@ -308,13 +308,13 @@ function BasicRoofActions({ margins, onUpdateMargins, onDuplicate, onDelete }: {
         Duplicate
       </button>
 
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
 
-      <DeleteButton onClick={onDelete} />
+      <DeleteButton onClick={onDelete} light />
 
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
 
-      <ShiftHint />
+      <ShiftHint light />
     </div>
   );
 }
@@ -413,20 +413,20 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
 }) {
   const [focused, setFocused] = useState(false);
   return (
-    <div className="flex items-center gap-3 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+    <div className={TOOLBAR}>
       {/* Parallel toggle */}
       <button
         onClick={() => onUpdate({ parallel: !obstacle.parallel })}
         className="flex items-center gap-2 shrink-0"
         title="Parallel to roof surface"
       >
-        <span className="text-white/70 text-[12px] font-['Figtree',sans-serif]">Parallel</span>
-        <div className={`relative w-8 h-4 rounded-full border transition-colors ${obstacle.parallel ? "bg-[#84cc16] border-[#84cc16]" : "bg-white/10 border-white/20"}`}>
+        <span className="text-white/75 text-[12px] font-['Figtree',sans-serif]">Parallel</span>
+        <div className={`relative w-8 h-4 rounded-full border transition-colors ${obstacle.parallel ? "bg-[#84cc16] border-[#84cc16]" : "bg-white/15 border-white/30"}`}>
           <div className={`absolute top-[2px] size-[10px] rounded-full bg-white transition-transform ${obstacle.parallel ? "translate-x-[16px]" : "translate-x-[2px]"}`} />
         </div>
       </button>
 
-      <div className="w-px h-5 bg-white/15 shrink-0" />
+      <div className="w-px h-5 bg-white/25 shrink-0" />
 
       {/* Height input */}
       <div className="flex items-center gap-1.5">
@@ -440,14 +440,14 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           className="w-16 h-7 bg-transparent border rounded px-2 text-white text-[12px] font-['Figtree',sans-serif] outline-none text-center transition-colors"
-          style={{ borderColor: focused ? "#ef4444" : "rgba(255,255,255,0.2)" }}
+          style={{ borderColor: focused ? "#ef4444" : "rgba(255,255,255,0.3)" }}
         />
-        <span className="text-white/40 text-[11px] font-['Figtree',sans-serif]">mm</span>
+        <span className="text-white/50 text-[11px] font-['Figtree',sans-serif]">mm</span>
       </div>
 
-      <div className="w-px h-5 bg-white/15 shrink-0" />
+      <div className="w-px h-5 bg-white/25 shrink-0" />
 
-      <DeleteButton onClick={onDelete} label={null} />
+      <DeleteButton onClick={onDelete} label={null} light />
     </div>
   );
 }
@@ -548,19 +548,19 @@ function MarginsControls({ margins, onUpdate }: { margins: RoofMargins; onUpdate
   };
 
   return (
-    <div className="flex items-center gap-3 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+    <div className={TOOLBAR}>
       {/* Same toggle */}
       <button
         onClick={handleToggleSame}
         className="flex items-center gap-2 shrink-0"
       >
-        <span className="text-white/60 text-[12px] font-['Figtree',sans-serif]">Same</span>
-        <div className={`relative w-8 h-4 rounded-full border transition-colors ${margins.same ? "bg-[#0068DE] border-[#0068DE]" : "bg-white/10 border-white/20"}`}>
+        <span className="text-white/75 text-[12px] font-['Figtree',sans-serif]">Same</span>
+        <div className={`relative w-8 h-4 rounded-full border transition-colors ${margins.same ? "bg-[#0068DE] border-[#0068DE]" : "bg-white/15 border-white/30"}`}>
           <div className={`absolute top-[2px] size-[10px] rounded-full bg-white transition-transform ${margins.same ? "translate-x-[16px]" : "translate-x-[2px]"}`} />
         </div>
       </button>
 
-      <div className="w-px h-5 bg-white/15 shrink-0" />
+      <div className="w-px h-5 bg-white/25 shrink-0" />
 
       {margins.same ? (
         /* Single combined input when all edges share one value */
