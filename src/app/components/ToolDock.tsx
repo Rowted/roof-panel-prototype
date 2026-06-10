@@ -14,24 +14,24 @@ interface ToolDockProps {
 export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onToolChange, hasRoof = false, hasPanelField = false }: ToolDockProps) {
   const tools = activeTool === "roof" ? ROOF_TOOLS : PANEL_TOOLS;
 
-  // Basic mode: just Draw roof + Panels, no stage switch, no advanced tools.
+  // Basic mode: simplified stage switch — Building / Panels, no sub-tools.
   if (mode === "basic") {
     return (
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <div className="flex items-center gap-1 bg-[rgba(21,27,30,0.96)] rounded-xl px-3 py-2 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm">
-          <BasicTool
-            label="Draw roof"
-            active={activeTool === "roof"}
-            onClick={() => onToolChange("roof")}
-            icon={<DrawRoofIcon />}
-          />
-          <BasicTool
-            label="Panels"
-            active={activeTool === "panel-field"}
-            disabled={!hasRoof}
-            onClick={() => hasRoof && onToolChange("panel-field")}
-            icon={<DrawPanelIcon />}
-          />
+        <div className="flex items-center bg-[rgba(21,27,30,0.96)] rounded-xl px-2 py-2 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm">
+          <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 h-12 min-w-[200px]">
+            <StageButton
+              label="Building"
+              active={activeTool === "roof"}
+              onClick={() => onToolChange("roof")}
+            />
+            <StageButton
+              label="Panels"
+              active={activeTool === "panel-field"}
+              disabled={!hasRoof}
+              onClick={() => hasRoof && onToolChange("panel-field")}
+            />
+          </div>
         </div>
       </div>
     );
@@ -90,27 +90,6 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
   );
 }
 
-function BasicTool({ label, active, disabled, onClick, icon }: {
-  label: string; active: boolean; disabled?: boolean; onClick: () => void; icon: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={disabled ? "Draw a roof first" : label}
-      className={`flex flex-col items-center justify-center gap-1.5 h-12 px-5 rounded-lg transition-all min-w-[72px] text-[11px] font-medium font-['Figtree',sans-serif] ${
-        disabled
-          ? "text-white/25 cursor-not-allowed"
-          : active
-          ? "bg-white/15 text-white"
-          : "text-white/55 hover:text-white hover:bg-white/8"
-      }`}
-    >
-      <div className="w-[15px] h-[15px] shrink-0">{icon}</div>
-      <span className="whitespace-nowrap leading-none">{label}</span>
-    </button>
-  );
-}
 
 function StageButton({ label, active, disabled, onClick }: {
   label: string; active: boolean; disabled?: boolean; onClick: () => void;
