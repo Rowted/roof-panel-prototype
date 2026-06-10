@@ -195,9 +195,9 @@ function RoofPanel({ roof, onUpdate, hasPanelField, onFillWithPanels, propsOpen,
         <div className="px-5 pb-4">
           <button
             onClick={onFillWithPanels}
-            className="w-full flex items-center justify-center gap-2 h-9 rounded-lg bg-[#0068DE]/20 border border-[#0068DE]/40 text-[#5aabff] hover:bg-[#0068DE]/30 hover:border-[#0068DE]/60 transition-all font-['Figtree',sans-serif] text-[13px] font-semibold"
+            className="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-white text-[#263238] hover:bg-white/90 shadow-md transition-all font-['Figtree',sans-serif] text-[13px] font-semibold"
           >
-            <Grid3X3 size={13} />
+            <Grid3X3 size={14} />
             Fill with panels
           </button>
         </div>
