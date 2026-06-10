@@ -1130,23 +1130,6 @@ export function MapCanvas({
     setHeightDragCentroid(null);
   };
 
-  // Hint text
-  let hint = "";
-  if (activeTool === "roof" && activeSubTool === "obstacle") {
-    if (drawnRoofs.length === 0) hint = "Draw a roof first, then add obstacles inside it";
-    else if (drawingPoints.length === 0) hint = "Click inside a roof surface to start drawing an obstacle";
-    else if (drawingPoints.length < 3) hint = `${drawingPoints.length} point${drawingPoints.length > 1 ? "s" : ""} — keep clicking to add corners`;
-    else hint = "Double-click or click first point to close the obstacle";
-  } else if (activeTool === "roof" && activeSubTool === "draw-roof") {
-    // Idle hints are shown in the contextual bar; only guide during drawing
-    if (drawingPoints.length === 0) hint = "";
-    else if (drawingPoints.length < 3) hint = `${drawingPoints.length} point${drawingPoints.length > 1 ? "s" : ""} — keep clicking to add corners`;
-    else hint = "Double-click or click first point to close the shape";
-  } else if (activeTool === "panel-field" && activeSubTool === "draw-panel") {
-    if (drawingPoints.length === 0) hint = "";
-    else if (drawingPoints.length < 3) hint = `${drawingPoints.length} point${drawingPoints.length > 1 ? "s" : ""} — keep clicking`;
-    else hint = "Double-click or click first point to close the panel field";
-  }
 
   return (
     <div ref={containerRef} className="absolute inset-0 bg-[#ddd]">
@@ -1197,12 +1180,6 @@ export function MapCanvas({
         onMouseUp={handleMouseUp}
       />
 
-      {/* Hint pill */}
-      {hint && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 bg-[rgba(21,27,30,0.88)] text-white text-[12px] font-['Figtree',sans-serif] px-4 py-2 rounded-full shadow-lg pointer-events-none whitespace-nowrap">
-          {hint}
-        </div>
-      )}
 
     </div>
   );
