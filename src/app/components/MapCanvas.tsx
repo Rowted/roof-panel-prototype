@@ -300,8 +300,11 @@ function distToSegment(p: Point, a: Point, b: Point): number {
 // Hit-test the orange direction arrow (tip knob or shaft)
 function arrowHit(points: Point[], direction: number, pt: Point): boolean {
   const tip = arrowTipAtRest(points, direction);
-  if (Math.hypot(tip.x - pt.x, tip.y - pt.y) < 16) return true;
-  return distToSegment(pt, polygonCentroid(points), tip) < 10;
+  const angle = Math.atan2(tip.y - polygonCentroid(points).y, tip.x - polygonCentroid(points).x);
+  // Knob is drawn 9px past the shaft tip — hit-test that position
+  const knob = { x: tip.x + Math.cos(angle) * 9, y: tip.y + Math.sin(angle) * 9 };
+  if (Math.hypot(knob.x - pt.x, knob.y - pt.y) < 18) return true;
+  return distToSegment(pt, polygonCentroid(points), knob) < 10;
 }
 
 // Hit-test the center dot (shown before a height is set)
@@ -377,13 +380,14 @@ function drawHeightDragOverlay(
   ctx.moveTo(centroid.x, centroid.y);
   ctx.lineTo(tipX, tipY);
   ctx.strokeStyle = "#f59e0b";
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 4;
   ctx.lineCap = "round";
   ctx.stroke();
 
   // Arrowhead
-  const headSize = 8;
+  const headSize = 10;
   const headAngle = 0.4;
+  ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(tipX, tipY);
   ctx.lineTo(tipX - headSize * Math.cos(arrowAngle - headAngle), tipY - headSize * Math.sin(arrowAngle - headAngle));
@@ -391,9 +395,12 @@ function drawHeightDragOverlay(
   ctx.lineTo(tipX - headSize * Math.cos(arrowAngle + headAngle), tipY - headSize * Math.sin(arrowAngle + headAngle));
   ctx.stroke();
 
-  // Grab knob at the tip (drag handle)
+  // Grab knob — placed slightly past the arrow tip so the head stays visible
+  const knobDist = 9;
+  const knobX = tipX + Math.cos(arrowAngle) * knobDist;
+  const knobY = tipY + Math.sin(arrowAngle) * knobDist;
   ctx.beginPath();
-  ctx.arc(tipX, tipY, 5, 0, Math.PI * 2);
+  ctx.arc(knobX, knobY, 6, 0, Math.PI * 2);
   ctx.fillStyle = "#f59e0b";
   ctx.fill();
   ctx.strokeStyle = "white";
