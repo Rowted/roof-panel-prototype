@@ -307,6 +307,10 @@ function BasicRoofActions({ margins, onUpdateMargins, onDuplicate, onDelete }: {
       <div className="w-px h-5 bg-white/15" />
 
       <DeleteButton onClick={onDelete} />
+
+      <div className="w-px h-5 bg-white/15" />
+
+      <ShiftHint />
     </div>
   );
 }
@@ -371,6 +375,8 @@ function PanelSelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void
       </BarBtn>
       <div className="w-px h-5 bg-white/15" />
       <DeleteButton onClick={onDelete} />
+      <div className="w-px h-5 bg-white/15" />
+      <ShiftHint />
     </div>
   );
 }
