@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Box, X, Info } from "lucide-react";
 import { TopNav } from "./components/TopNav";
 import { Sidebar, RoofData, PanelFieldData, DEFAULT_MARGINS } from "./components/Sidebar";
 import { MapCanvas, DrawnRoof, DrawnPanelField, ObstacleData } from "./components/MapCanvas";
@@ -58,6 +59,12 @@ export default function App() {
   const [selectedObstacleId, setSelectedObstacleId] = useState<string | null>(null);
 
   const [sunPathOpen, setSunPathOpen] = useState(false);
+  const [proModeBannerDismissed, setProModeBannerDismissed] = useState(false);
+
+  // Re-show the Pro mode banner each time the user switches into Pro
+  useEffect(() => {
+    if (mode === "pro") setProModeBannerDismissed(false);
+  }, [mode]);
 
   const [shadingDisplay, setShadingDisplay] = useState(true);
   const [shadingSelectorActive, setShadingSelectorActive] = useState(false);
@@ -334,6 +341,45 @@ export default function App() {
           )}
           {activeSubTool === "import-3d" && (
             <Import3DOverlay onClose={() => setActiveSubTool(activeTool === "roof" ? "draw-roof" : "draw-panel")} />
+          )}
+
+          {/* Pro mode welcome banner */}
+          {mode === "pro" && !proModeBannerDismissed && (
+            <div className="absolute bottom-[108px] left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-[rgba(21,27,30,0.97)] border border-white/10 rounded-xl px-4 py-3 shadow-2xl backdrop-blur-sm whitespace-nowrap">
+              {/* Icon */}
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
+                <Box size={18} className="text-white/80" />
+              </div>
+              {/* Message */}
+              <p className="text-white/80 text-[13px] font-['Figtree',sans-serif] max-w-[340px] whitespace-normal leading-snug">
+                Import an editable 3D model of your building instead of creating one manually.
+              </p>
+              {/* Import button (not available) */}
+              <div className="relative group shrink-0">
+                <button className="px-4 h-8 rounded-lg bg-[#7c3aed] text-white text-[13px] font-semibold font-['Figtree',sans-serif] cursor-default opacity-80">
+                  Import
+                </button>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 rounded-md bg-[#0b0f11] border border-white/10 text-white text-[12px] font-['Figtree',sans-serif] whitespace-nowrap shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Not available in this prototype
+                </div>
+              </div>
+              {/* Info button (not available) */}
+              <div className="relative group shrink-0">
+                <button className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 text-white/60 cursor-default">
+                  <Info size={15} />
+                </button>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 rounded-md bg-[#0b0f11] border border-white/10 text-white text-[12px] font-['Figtree',sans-serif] whitespace-nowrap shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Not available in this prototype
+                </div>
+              </div>
+              {/* Dismiss */}
+              <button
+                onClick={() => setProModeBannerDismissed(true)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              >
+                <X size={15} />
+              </button>
+            </div>
           )}
         </div>
       </div>
