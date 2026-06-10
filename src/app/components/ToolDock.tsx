@@ -18,17 +18,19 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
   if (mode === "basic") {
     return (
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <div className="flex items-center gap-1 bg-[rgba(21,27,30,0.96)] rounded-xl p-1.5 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm min-w-[200px]">
+        <div className="flex items-center gap-1.5 bg-[rgba(21,27,30,0.96)] rounded-xl p-1.5 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm w-[240px]">
           <StageButton
             label="Building"
             active={activeTool === "roof"}
             onClick={() => onToolChange("roof")}
+            fill
           />
           <StageButton
             label="Panels"
             active={activeTool === "panel-field"}
             disabled={!hasRoof}
             onClick={() => hasRoof && onToolChange("panel-field")}
+            fill
           />
         </div>
       </div>
@@ -89,15 +91,17 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
 }
 
 
-function StageButton({ label, active, disabled, onClick }: {
-  label: string; active: boolean; disabled?: boolean; onClick: () => void;
+function StageButton({ label, active, disabled, onClick, fill }: {
+  label: string; active: boolean; disabled?: boolean; onClick: () => void; fill?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       title={disabled ? "Draw a roof first" : label}
-      className={`flex items-center justify-center h-full px-4 min-w-[76px] rounded-md transition-all text-[12px] font-semibold font-['Figtree',sans-serif] ${
+      className={`flex items-center justify-center rounded-md transition-all text-[12px] font-semibold font-['Figtree',sans-serif] ${
+        fill ? "flex-1 h-9" : "h-full px-4 min-w-[76px]"
+      } ${
         disabled
           ? "text-white/25 cursor-not-allowed"
           : active
