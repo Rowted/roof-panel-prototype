@@ -64,7 +64,7 @@ export function ContextBar({ mode, activeSubTool, drawingMeasure, isAdjustingHei
           <Prompt text="Click a roof surface to adjust its height" />
         )}
         {!isDrawing && activeSubTool === "roof-height" && hasSelection && !isAdjustingHeight && (
-          <HeightIdleActions onDelete={onDeleteRoof} />
+          <HeightIdleActions count={selectedRoofCount} onDelete={onDeleteRoof} />
         )}
         {!isDrawing && activeSubTool === "roof-height" && hasSelection && isAdjustingHeight && roofHeight && (
           <HeightAdjustingControls height={roofHeight} onUpdate={onUpdateRoofHeight} />
@@ -93,9 +93,13 @@ export function ContextBar({ mode, activeSubTool, drawingMeasure, isAdjustingHei
   );
 }
 
-function HeightIdleActions({ onDelete }: { onDelete: () => void }) {
+function HeightIdleActions({ count, onDelete }: { count: number; onDelete: () => void }) {
   return (
     <div className="flex items-center gap-2 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+      <span className="text-white/50 text-[12px] font-['Figtree',sans-serif] pr-1">
+        {count} roof{count > 1 ? "s" : ""} selected
+      </span>
+      <div className="w-px h-5 bg-white/15" />
       <BarBtn title="Flatten everything">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M1 6.5H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
@@ -105,14 +109,9 @@ function HeightIdleActions({ onDelete }: { onDelete: () => void }) {
         Flatten everything
       </BarBtn>
       <div className="w-px h-5 bg-white/15" />
-      <BarBtn title="Select">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M2 2L2 9.5L4.5 7.5L6 11.5L7.3 11L5.8 7H8.5L2 2Z" fill="currentColor" />
-        </svg>
-        Select
-      </BarBtn>
-      <div className="w-px h-5 bg-white/15" />
       <DeleteButton onClick={onDelete} />
+      <div className="w-px h-5 bg-white/15" />
+      <ShiftHint />
     </div>
   );
 }

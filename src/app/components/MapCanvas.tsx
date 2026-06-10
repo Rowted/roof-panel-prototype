@@ -774,10 +774,13 @@ export function MapCanvas({
       return;
     }
 
-    // Roof height: click to select
+    // Roof height: click to select (Shift = multi-select)
     if (activeTool === "roof" && activeSubTool === "roof-height") {
       const target = drawnRoofs.find((r) => isPointInPolygon(pt, r.points));
-      if (target) onSelectRoof(target.id);
+      if (target) {
+        if (e.shiftKey) onShiftSelectRoof(target.id);
+        else onSelectRoof(target.id);
+      }
       return;
     }
 
