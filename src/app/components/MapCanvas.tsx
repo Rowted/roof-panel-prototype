@@ -498,6 +498,8 @@ export function MapCanvas({
   const [heightDragCurrent, setHeightDragCurrent] = useState<Point | null>(null);
   // Whether the cursor is hovering the direction arrow (shows the ring as a hint)
   const [arrowHovered, setArrowHovered] = useState(false);
+  // Flag: a height-drag just finished — suppress the click event that follows mouseup
+  const heightDragJustFinished = useRef(false);
 
   const getRelativePoint = (e: React.MouseEvent): Point => {
     const rect = canvasRef.current!.getBoundingClientRect();
@@ -715,6 +717,12 @@ export function MapCanvas({
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    // If a height-drag just ended, the browser fires a click right after mouseup.
+    // Ignore that click so it doesn't accidentally start a new roof drawing.
+    if (heightDragJustFinished.current) {
+      heightDragJustFinished.current = false;
+      return;
+    }
     const pt = getRelativePoint(e);
 
     // Shading selector: pick a point on the roof to read its shading value
@@ -1105,6 +1113,9 @@ export function MapCanvas({
         else onUpdateRoofPoints(d.id, d.points);
       });
     }
+    // Mark that a height-drag just ended so the following click event doesn't
+    // accidentally start a new roof drawing.
+    if (isDraggingHeight) heightDragJustFinished.current = true;
     setDragState(null);
     setDragPreview(null);
     setIsDraggingHeight(false);
