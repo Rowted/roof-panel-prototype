@@ -345,7 +345,7 @@ export default function App() {
 
           {/* Pro mode welcome banner */}
           {mode === "pro" && !proModeBannerDismissed && (
-            <div className="absolute bottom-[108px] left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-[rgba(21,27,30,0.97)] border border-white/10 rounded-xl px-4 py-3 shadow-2xl backdrop-blur-sm whitespace-nowrap">
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-3 bg-[rgba(21,27,30,0.97)] border border-white/10 rounded-xl px-4 py-3 shadow-2xl backdrop-blur-sm whitespace-nowrap">
               {/* Icon */}
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
                 <Box size={18} className="text-white/80" />
