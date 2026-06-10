@@ -358,9 +358,9 @@ function ShiftHintPrompt({ text }: { text: string }) {
 
 function PanelSelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
   return (
-    <div className="flex items-center gap-2 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+    <div className={TOOLBAR}>
       {/* Trim selected panel fields */}
-      <BarBtn title="Trim selected panel fields">
+      <BarBtn title="Trim selected panel fields" light>
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <circle cx="3" cy="3.5" r="1.8" stroke="currentColor" strokeWidth="1.2" />
           <circle cx="3" cy="9.5" r="1.8" stroke="currentColor" strokeWidth="1.2" />
@@ -368,19 +368,19 @@ function PanelSelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void
         </svg>
         Trim
       </BarBtn>
-      <div className="w-px h-5 bg-white/15" />
+      <div className="w-px h-5 bg-white/25" />
       {/* Duplicate */}
-      <BarBtn title="Duplicate selected panel field" onClick={onDuplicate}>
+      <BarBtn title="Duplicate selected panel field" onClick={onDuplicate} light>
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <rect x="1" y="4" width="8" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
           <path d="M4 3.5V2.5a1 1 0 011-1H10.5a1 1 0 011 1V8a1 1 0 01-1 1H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
         Duplicate
       </BarBtn>
-      <div className="w-px h-5 bg-white/15" />
-      <DeleteButton onClick={onDelete} />
-      <div className="w-px h-5 bg-white/15" />
-      <ShiftHint />
+      <div className="w-px h-5 bg-white/25" />
+      <DeleteButton onClick={onDelete} light />
+      <div className="w-px h-5 bg-white/25" />
+      <ShiftHint light />
     </div>
   );
 }
