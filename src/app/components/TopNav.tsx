@@ -28,6 +28,9 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
             <ProBtn label="Import 3D model" onClick={onImport3D}>
               <Box size={14} />
             </ProBtn>
+            <ProBtn label="Sun path" onClick={onToggleSunPath} active={sunPathOpen}>
+              <Sun size={14} />
+            </ProBtn>
           </>
         )}
       </div>
@@ -78,23 +81,7 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
           <Redo2 size={15} />
         </NavBtn>
 
-        {/* Sun path — Pro only */}
-        {mode === "pro" && (
-          <>
-            <div className="w-px h-6 bg-white/20 mx-1.5" />
-            <button
-              onClick={onToggleSunPath}
-              className={`group relative flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
-                sunPathOpen ? "bg-[#0068DE] text-white" : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
-              }`}
-            >
-              <Sun size={14} />
-              Sun path
-            </button>
-          </>
-        )}
-
-        <div className="w-px h-6 bg-white/20 mx-2" />
+        <div className="w-px h-6 bg-white/20 mx-1.5" />
 
         {/* Project totals */}
         <div className="text-white font-['Figtree',sans-serif] text-[13px] font-semibold tabular-nums pr-1 whitespace-nowrap">
@@ -106,16 +93,21 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
   );
 }
 
-/** Prominent labelled button — used for Upload overlay and Import 3D in Pro mode */
-function ProBtn({ label, onClick, children }: {
+/** Prominent labelled button — used for Upload overlay, Import 3D, and Sun path in Pro mode */
+function ProBtn({ label, onClick, children, active }: {
   label: string;
   onClick: () => void;
   children: React.ReactNode;
+  active?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-white/10 text-white/70 hover:bg-white/18 hover:text-white transition-colors text-[13px] font-medium font-['Figtree',sans-serif] whitespace-nowrap"
+      className={`flex items-center gap-1.5 h-7 px-3 rounded-md transition-colors text-[13px] font-medium font-['Figtree',sans-serif] whitespace-nowrap ${
+        active
+          ? "bg-[#0068DE] text-white"
+          : "bg-white/10 text-white/70 hover:bg-white/18 hover:text-white"
+      }`}
     >
       {children}
       {label}
