@@ -18,20 +18,18 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
   if (mode === "basic") {
     return (
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <div className="flex items-center bg-[rgba(21,27,30,0.96)] rounded-xl px-2 py-2 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm">
-          <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 h-12 min-w-[200px]">
-            <StageButton
-              label="Building"
-              active={activeTool === "roof"}
-              onClick={() => onToolChange("roof")}
-            />
-            <StageButton
-              label="Panels"
-              active={activeTool === "panel-field"}
-              disabled={!hasRoof}
-              onClick={() => hasRoof && onToolChange("panel-field")}
-            />
-          </div>
+        <div className="flex items-center gap-1 bg-[rgba(21,27,30,0.96)] rounded-xl p-1.5 shadow-2xl pointer-events-auto border border-white/10 backdrop-blur-sm min-w-[200px]">
+          <StageButton
+            label="Building"
+            active={activeTool === "roof"}
+            onClick={() => onToolChange("roof")}
+          />
+          <StageButton
+            label="Panels"
+            active={activeTool === "panel-field"}
+            disabled={!hasRoof}
+            onClick={() => hasRoof && onToolChange("panel-field")}
+          />
         </div>
       </div>
     );
