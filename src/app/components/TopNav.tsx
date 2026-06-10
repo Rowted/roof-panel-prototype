@@ -16,85 +16,110 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
   const [showMeasurements, setShowMeasurements] = useState(false);
 
   return (
-    <div className="relative flex items-center h-10 bg-[rgba(21,27,30,0.98)] px-2 shrink-0 z-50">
-      {/* Mode toggle */}
-      <div className="flex items-center h-6 rounded overflow-hidden border border-white/20 mr-2">
+    <div className="relative flex items-center h-10 bg-[rgba(21,27,30,0.98)] px-3 shrink-0 z-50">
+
+      {/* ── Left zone ── */}
+      <div className="flex items-center gap-1.5 flex-1">
+        {mode === "pro" && (
+          <>
+            <ProBtn label="Upload overlay" onClick={onFileUpload}>
+              <Upload size={14} />
+            </ProBtn>
+            <ProBtn label="Import 3D model" onClick={onImport3D}>
+              <Box size={14} />
+            </ProBtn>
+          </>
+        )}
+      </div>
+
+      {/* ── Center: Basic / Pro toggle (absolute so it's always perfectly centred) ── */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center h-6 rounded overflow-hidden border border-white/20">
         <button
           onClick={() => onModeChange("basic")}
-          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${mode === "basic" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"}`}
+          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${
+            mode === "basic" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"
+          }`}
         >
           Basic
         </button>
         <button
           onClick={() => onModeChange("pro")}
-          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${mode === "pro" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"}`}
+          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${
+            mode === "pro" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"
+          }`}
         >
           Pro
         </button>
       </div>
 
-      {/* Vertical divider */}
-      <div className="w-px h-6 bg-white/20 mx-1.5" />
+      {/* ── Right zone ── */}
+      <div className="flex items-center flex-1 justify-end">
+        {/* View / measurement tools */}
+        <NavBtn label="Projected length calculator">
+          <Calculator size={15} />
+        </NavBtn>
+        <NavBtn label="Display measurements" active={showMeasurements} onClick={() => setShowMeasurements((v) => !v)}>
+          <Ruler size={15} />
+        </NavBtn>
+        <NavBtn label="Panel opacity">
+          <Droplet size={15} />
+        </NavBtn>
 
-      {/* Import actions (moved off the bottom dock) */}
-      <NavBtn label="Upload overlay file" onClick={onFileUpload}>
-        <Upload size={15} />
-      </NavBtn>
-      <NavBtn label="Import 3D model" onClick={onImport3D}>
-        <Box size={15} />
-      </NavBtn>
+        <div className="w-px h-6 bg-white/20 mx-1.5" />
 
-      {/* Spacer */}
-      <div className="flex-1" />
+        {/* File / history */}
+        <NavBtn label="Save">
+          <Save size={15} />
+        </NavBtn>
+        <NavBtn label="Undo">
+          <Undo2 size={15} />
+        </NavBtn>
+        <NavBtn label="Redo">
+          <Redo2 size={15} />
+        </NavBtn>
 
-      {/* View / measurement tools */}
-      <NavBtn label="Projected length calculator">
-        <Calculator size={15} />
-      </NavBtn>
-      <NavBtn label="Display measurements" active={showMeasurements} onClick={() => setShowMeasurements((v) => !v)}>
-        <Ruler size={15} />
-      </NavBtn>
-      <NavBtn label="Panel opacity">
-        <Droplet size={15} />
-      </NavBtn>
+        {/* Sun path — Pro only */}
+        {mode === "pro" && (
+          <>
+            <div className="w-px h-6 bg-white/20 mx-1.5" />
+            <button
+              onClick={onToggleSunPath}
+              className={`group relative flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
+                sunPathOpen ? "bg-[#0068DE] text-white" : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
+              }`}
+            >
+              <Sun size={14} />
+              Sun path
+            </button>
+          </>
+        )}
 
-      <div className="w-px h-6 bg-white/20 mx-1.5" />
+        <div className="w-px h-6 bg-white/20 mx-2" />
 
-      {/* File / history */}
-      <NavBtn label="Save">
-        <Save size={15} />
-      </NavBtn>
-      <NavBtn label="Undo">
-        <Undo2 size={15} />
-      </NavBtn>
-      <NavBtn label="Redo">
-        <Redo2 size={15} />
-      </NavBtn>
-
-      <div className="w-px h-6 bg-white/20 mx-1.5" />
-
-      {/* Show sun path — Pro only */}
-      {mode === "pro" && (
-        <>
-          <button
-            onClick={onToggleSunPath}
-            className={`group relative flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
-              sunPathOpen ? "bg-[#0068DE] text-white" : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
-            }`}
-          >
-            <Sun size={14} />
-            Sun path
-          </button>
-
-          <div className="w-px h-6 bg-white/20 mx-2" />
-        </>
-      )}
-
-      {/* Project totals */}
-      <div className="text-white font-['Figtree',sans-serif] text-[13px] font-semibold tabular-nums pr-1 whitespace-nowrap">
-        {totalPanels} panels / {totalKwp.toFixed(1)} kWp
+        {/* Project totals */}
+        <div className="text-white font-['Figtree',sans-serif] text-[13px] font-semibold tabular-nums pr-1 whitespace-nowrap">
+          {totalPanels} panels / {totalKwp.toFixed(1)} kWp
+        </div>
       </div>
+
     </div>
+  );
+}
+
+/** Prominent labelled button — used for Upload overlay and Import 3D in Pro mode */
+function ProBtn({ label, onClick, children }: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 h-7 px-3 rounded-md bg-white/10 text-white/70 hover:bg-white/18 hover:text-white transition-colors text-[13px] font-medium font-['Figtree',sans-serif] whitespace-nowrap"
+    >
+      {children}
+      {label}
+    </button>
   );
 }
 
