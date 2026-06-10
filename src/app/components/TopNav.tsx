@@ -33,10 +33,10 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
       </div>
 
       {/* ── Center: Basic / Pro toggle (absolute so it's always perfectly centred) ── */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center h-6 rounded overflow-hidden border border-white/20">
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center h-7 rounded overflow-hidden border border-white/20">
         <button
           onClick={() => onModeChange("basic")}
-          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${
+          className={`w-16 h-full text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
             mode === "basic" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"
           }`}
         >
@@ -44,7 +44,7 @@ export function TopNav({ mode, onModeChange, onFileUpload, onImport3D, totalPane
         </button>
         <button
           onClick={() => onModeChange("pro")}
-          className={`px-3 h-full text-[13px] font-['Figtree',sans-serif] transition-colors ${
+          className={`w-16 h-full text-[13px] font-['Figtree',sans-serif] font-medium transition-colors ${
             mode === "pro" ? "bg-white text-[#263238]" : "text-[#868d92] hover:text-white/80"
           }`}
         >
