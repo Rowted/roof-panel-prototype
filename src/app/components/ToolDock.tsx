@@ -58,13 +58,13 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
         </div>
         <div className="w-px h-8 bg-white/15 mx-1.5 shrink-0" />
 
-        {tools.map((tool) => {
+        {tools.flatMap((tool, idx) => {
           const isActive = activeSubTool === tool.id;
           const isLocked =
             (activeTool === "roof" && !hasRoof && tool.id !== "draw-roof") ||
             (activeTool === "panel-field" && !hasPanelField && tool.id !== "draw-panel");
 
-          return (
+          const button = (
             <button
               key={tool.id}
               onClick={() => !isLocked && onSubToolChange(tool.id)}
@@ -86,6 +86,14 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
               </span>
             </button>
           );
+
+          if (tool.id === "safety-margins") {
+            return [
+              button,
+              <div key={`divider-${tool.id}`} className="w-px h-8 bg-white/15 mx-1.5 shrink-0" />
+            ];
+          }
+          return button;
         })}
       </div>
     </div>
