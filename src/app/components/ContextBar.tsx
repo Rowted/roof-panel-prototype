@@ -35,7 +35,7 @@ interface ContextBarProps {
 
 const CONTEXT_TOOLS = ["draw-roof", "draw-panel", "safety-margins", "roof-height", "obstacle", "shading-analysis"];
 
-export function ContextBar({ mode: _mode, activeSubTool, drawingMeasure, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
+export function ContextBar({ mode, activeSubTool, drawingMeasure, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
   const isDrawing = (activeSubTool === "draw-roof" || activeSubTool === "draw-panel" || activeSubTool === "obstacle") && drawingMeasure !== null;
   if (!CONTEXT_TOOLS.includes(activeSubTool) && !isDrawing) return null;
 
@@ -50,7 +50,9 @@ export function ContextBar({ mode: _mode, activeSubTool, drawingMeasure, isAdjus
         {isDrawing && <MeasureDisplay mm={drawingMeasure!} />}
         {!isDrawing && activeSubTool === "draw-roof" && (
           selectedRoofCount > 0
-            ? <RoofEditActions count={selectedRoofCount} onDuplicate={onDuplicateRoof} onDelete={onDeleteRoof} />
+            ? (mode === "basic"
+                ? <BasicRoofActions margins={margins} onUpdateMargins={onUpdateMargins} onDuplicate={onDuplicateRoof} onDelete={onDeleteRoof} />
+                : <RoofEditActions count={selectedRoofCount} onDuplicate={onDuplicateRoof} onDelete={onDeleteRoof} />)
             : <Prompt text="Click on the map to start drawing a roof" />
         )}
         {!isDrawing && activeSubTool === "safety-margins" && (
@@ -256,6 +258,56 @@ function RoofEditActions({ count, onDuplicate, onDelete }: { count: number; onDu
       <DeleteButton onClick={onDelete} />
       <div className="w-px h-5 bg-white/15" />
       <ShiftHint />
+    </div>
+  );
+}
+
+function BasicRoofActions({ margins, onUpdateMargins, onDuplicate, onDelete }: {
+  margins: RoofMargins | null;
+  onUpdateMargins: (m: Partial<RoofMargins>) => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+}) {
+  const [focused, setFocused] = useState(false);
+  const value = margins?.top ?? 0;
+  return (
+    <div className="flex items-center gap-3 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
+      {/* Single uniform margin */}
+      <div className="flex items-center gap-2">
+        <span className="text-white/60 text-[12px] font-['Figtree',sans-serif]">Margin</span>
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            value={value}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              onUpdateMargins({ same: true, top: v, right: v, bottom: v, left: v, ridge: v });
+            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            className="w-16 h-7 bg-transparent border rounded px-2 text-white text-[12px] font-['Figtree',sans-serif] outline-none text-center transition-colors"
+            style={{ borderColor: focused ? "#0068DE" : "rgba(255,255,255,0.2)" }}
+          />
+          <span className="text-white/40 text-[11px] font-['Figtree',sans-serif]">mm</span>
+        </div>
+      </div>
+
+      <div className="w-px h-5 bg-white/15" />
+
+      <button
+        onClick={onDuplicate}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
+      >
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <rect x="1" y="4" width="8" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M4 3.5V2.5a1 1 0 011-1H10.5a1 1 0 011 1V8a1 1 0 01-1 1H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+        Duplicate
+      </button>
+
+      <div className="w-px h-5 bg-white/15" />
+
+      <DeleteButton onClick={onDelete} />
     </div>
   );
 }

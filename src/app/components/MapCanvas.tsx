@@ -274,6 +274,18 @@ function drawHeightModeRoof(ctx: CanvasRenderingContext2D, points: Point[]) {
   }
 }
 
+function arrowTipAtRest(points: Point[], direction: number): Point {
+  const centroid = polygonCentroid(points);
+  const minX = Math.min(...points.map((p) => p.x));
+  const maxX = Math.max(...points.map((p) => p.x));
+  const minY = Math.min(...points.map((p) => p.y));
+  const maxY = Math.max(...points.map((p) => p.y));
+  const ringRadius = Math.max(maxX - minX, maxY - minY) / 2 + 70;
+  const angle = ((direction - 90) * Math.PI) / 180;
+  const len = ringRadius * 0.4;
+  return { x: centroid.x + Math.cos(angle) * len, y: centroid.y + Math.sin(angle) * len };
+}
+
 function drawHeightDragOverlay(
   ctx: CanvasRenderingContext2D,
   points: Point[],
@@ -281,6 +293,7 @@ function drawHeightDragOverlay(
   dragCurrent: Point | null,
   currentInclination: number,
   currentDirection: number,
+  showRing = true,
 ) {
   // Compute ring radius from bounding box
   const minX = Math.min(...points.map((p) => p.x));
@@ -289,26 +302,28 @@ function drawHeightDragOverlay(
   const maxY = Math.max(...points.map((p) => p.y));
   const ringRadius = Math.max(maxX - minX, maxY - minY) / 2 + 70;
 
-  // Compass ring
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(centroid.x, centroid.y, ringRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255,255,255,0.85)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  // Tick marks (every 30°)
-  for (let i = 0; i < 12; i++) {
-    const a = (i * 30 * Math.PI) / 180;
-    const inner = ringRadius - (i % 3 === 0 ? 10 : 5);
+  // Compass ring (only while dragging in basic; always in pro height tool)
+  if (showRing) {
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(centroid.x + Math.cos(a) * inner, centroid.y + Math.sin(a) * inner);
-    ctx.lineTo(centroid.x + Math.cos(a) * ringRadius, centroid.y + Math.sin(a) * ringRadius);
-    ctx.strokeStyle = "rgba(255,255,255,0.7)";
-    ctx.lineWidth = i % 3 === 0 ? 1.5 : 1;
+    ctx.arc(centroid.x, centroid.y, ringRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.85)";
+    ctx.lineWidth = 1.5;
     ctx.stroke();
+
+    // Tick marks (every 30°)
+    for (let i = 0; i < 12; i++) {
+      const a = (i * 30 * Math.PI) / 180;
+      const inner = ringRadius - (i % 3 === 0 ? 10 : 5);
+      ctx.beginPath();
+      ctx.moveTo(centroid.x + Math.cos(a) * inner, centroid.y + Math.sin(a) * inner);
+      ctx.lineTo(centroid.x + Math.cos(a) * ringRadius, centroid.y + Math.sin(a) * ringRadius);
+      ctx.strokeStyle = "rgba(255,255,255,0.7)";
+      ctx.lineWidth = i % 3 === 0 ? 1.5 : 1;
+      ctx.stroke();
+    }
+    ctx.restore();
   }
-  ctx.restore();
 
   // Direction arrow (from centroid toward drag or current direction)
   let arrowAngle: number;
@@ -350,6 +365,15 @@ function drawHeightDragOverlay(
   ctx.lineTo(tipX - headSize * Math.cos(arrowAngle - headAngle), tipY - headSize * Math.sin(arrowAngle - headAngle));
   ctx.moveTo(tipX, tipY);
   ctx.lineTo(tipX - headSize * Math.cos(arrowAngle + headAngle), tipY - headSize * Math.sin(arrowAngle + headAngle));
+  ctx.stroke();
+
+  // Grab knob at the tip (drag handle)
+  ctx.beginPath();
+  ctx.arc(tipX, tipY, 5, 0, Math.PI * 2);
+  ctx.fillStyle = "#f59e0b";
+  ctx.fill();
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 1.5;
   ctx.stroke();
   ctx.restore();
 
@@ -516,6 +540,21 @@ export function MapCanvas({
       }
     }
 
+    // Basic mode draw-roof: show the orange direction arrow on the selected roof
+    // (ring appears only while dragging the arrow)
+    if (mode === "basic" && activeSubTool === "draw-roof" && selectedRoofId && drawingPoints.length === 0) {
+      const sel = drawnRoofs.find((r) => r.id === selectedRoofId);
+      const roofData = roofs.find((r) => r.id === selectedRoofId);
+      if (sel && sel.points.length >= 3) {
+        const centroid = polygonCentroid(sel.points);
+        drawHeightDragOverlay(
+          ctx, sel.points, centroid, heightDragCurrent,
+          roofData?.inclination ?? 0, roofData?.direction ?? 0,
+          /* showRing */ !!heightDragCurrent,
+        );
+      }
+    }
+
     // Draw in-progress polygon
     if (drawingPoints.length > 0) {
       const drawColor = activeSubTool === "obstacle" ? "#ef4444" : (activeTool === "panel-field" ? "#5aabff" : "#0068DE");
@@ -547,7 +586,7 @@ export function MapCanvas({
       });
 
     }
-  }, [drawnRoofs, drawnPanelFields, drawingPoints, mousePos, selectedRoofId, selectedPanelFieldId, activeTool, activeSubTool, roofs, isDraggingHeight, dragPreview, heightDragCentroid, heightDragCurrent, obstacles, selectedObstacleId, multiRoofIds, selectedNodes]);
+  }, [mode, drawnRoofs, drawnPanelFields, drawingPoints, mousePos, selectedRoofId, selectedPanelFieldId, activeTool, activeSubTool, roofs, isDraggingHeight, dragPreview, heightDragCentroid, heightDragCurrent, obstacles, selectedObstacleId, multiRoofIds, selectedNodes]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -790,9 +829,15 @@ export function MapCanvas({
     }
 
     // Cursor feedback while drawing-tool is idle (roof: draw-roof, panel: draw-panel)
-    if (activeSubTool === "draw-roof" && drawingPoints.length === 0) {
+    if (activeSubTool === "draw-roof" && drawingPoints.length === 0 && !isDraggingHeight) {
       const sel = drawnRoofs.find((r) => r.id === selectedRoofId);
       if (sel) {
+        // Basic: hovering the orange arrow tip → grab cursor
+        if (mode === "basic" && sel.points.length >= 3) {
+          const roofData = roofs.find((r) => r.id === selectedRoofId);
+          const tip = arrowTipAtRest(sel.points, roofData?.direction ?? 0);
+          if (Math.hypot(tip.x - pt.x, tip.y - pt.y) < 14) { setCursorStyle("cursor-grab"); return; }
+        }
         const nearVertex = sel.points.some((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
         if (nearVertex) { setCursorStyle("cursor-crosshair"); return; }
       }
@@ -812,7 +857,8 @@ export function MapCanvas({
     }
 
     // Height drag: update current mouse and fire inclination/direction callback
-    if (activeSubTool === "roof-height" && isDraggingHeight && heightDragCentroid && selectedRoofId) {
+    // (roof-height tool in Pro, or dragging the arrow in Basic draw-roof)
+    if (isDraggingHeight && heightDragCentroid && selectedRoofId) {
       setHeightDragCurrent(pt);
       const dx = pt.x - heightDragCentroid.x;
       const dy = pt.y - heightDragCentroid.y;
@@ -890,6 +936,17 @@ export function MapCanvas({
     // Draw-roof: select / multi-select / move / reshape (only when not mid-draw)
     if (activeSubTool === "draw-roof" && drawingPoints.length === 0) {
       const primary = drawnRoofs.find((r) => r.id === selectedRoofId);
+      // 0) Basic mode: grabbing the orange arrow tip starts an inclination/direction drag
+      if (mode === "basic" && primary && primary.points.length >= 3) {
+        const roofData = roofs.find((r) => r.id === selectedRoofId);
+        const tip = arrowTipAtRest(primary.points, roofData?.direction ?? 0);
+        if (Math.hypot(tip.x - pt.x, tip.y - pt.y) < 14) {
+          setHeightDragCentroid(polygonCentroid(primary.points));
+          setHeightDragCurrent(pt);
+          setIsDraggingHeight(true);
+          return;
+        }
+      }
       // 1) Vertex of the primary selected roof → node select / reshape
       if (primary) {
         const vi = primary.points.findIndex((p) => Math.hypot(p.x - pt.x, p.y - pt.y) < VERTEX_HIT_RADIUS);
