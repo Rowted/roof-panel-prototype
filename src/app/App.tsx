@@ -168,6 +168,19 @@ export default function App() {
     setObstacles((prev) => prev.map((o) => (o.id === id ? { ...o, ...updates } : o)));
   };
 
+  const handleDuplicateObstacle = (id: string) => {
+    const ob = obstacles.find((o) => o.id === id);
+    if (!ob) return;
+    const newId = `ob-${Date.now()}`;
+    const offset = 20;
+    setObstacles((prev) => [...prev, {
+      ...ob,
+      id: newId,
+      points: ob.points.map((p) => ({ x: p.x + offset, y: p.y + offset })),
+    }]);
+    setSelectedObstacleId(newId);
+  };
+
   const handleDeleteObstacle = (id: string) => {
     setObstacles((prev) => prev.filter((o) => o.id !== id));
     if (selectedObstacleId === id) setSelectedObstacleId(null);
@@ -326,6 +339,7 @@ export default function App() {
             selectedRoofCount={allSelectedRoofIds.length}
             selectedObstacle={obstacles.find((o) => o.id === selectedObstacleId) ?? null}
             onUpdateObstacle={(u) => selectedObstacleId && handleUpdateObstacle(selectedObstacleId, u)}
+            onDuplicateObstacle={() => selectedObstacleId && handleDuplicateObstacle(selectedObstacleId)}
             onDeleteObstacle={() => selectedObstacleId && handleDeleteObstacle(selectedObstacleId)}
             hasSelectedPanelField={!!selectedPanelFieldId}
             onDuplicatePanelField={() => selectedPanelFieldId && handleDuplicatePanelField(selectedPanelFieldId)}

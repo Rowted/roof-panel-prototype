@@ -23,6 +23,7 @@ interface ContextBarProps {
   onDeleteRoof: () => void;
   selectedObstacle: ObstacleData | null;
   onUpdateObstacle: (u: Partial<ObstacleData>) => void;
+  onDuplicateObstacle: () => void;
   onDeleteObstacle: () => void;
   hasSelectedPanelField: boolean;
   onDuplicatePanelField: () => void;
@@ -37,7 +38,7 @@ interface ContextBarProps {
 
 const CONTEXT_TOOLS = ["draw-roof", "draw-panel", "safety-margins", "roof-height", "obstacle", "shading-analysis"];
 
-export function ContextBar({ mode, activeSubTool, drawingMeasure, customLength, onSetCustomLength, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
+export function ContextBar({ mode, activeSubTool, drawingMeasure, customLength, onSetCustomLength, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDuplicateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
   const isDrawing = (activeSubTool === "draw-roof" || activeSubTool === "draw-panel" || activeSubTool === "obstacle") && drawingMeasure !== null;
   if (!CONTEXT_TOOLS.includes(activeSubTool) && !isDrawing) return null;
 
@@ -73,7 +74,7 @@ export function ContextBar({ mode, activeSubTool, drawingMeasure, customLength, 
         )}
         {!isDrawing && activeSubTool === "obstacle" && (
           selectedObstacle
-            ? <ObstacleControls obstacle={selectedObstacle} onUpdate={onUpdateObstacle} onDelete={onDeleteObstacle} />
+            ? <ObstacleControls obstacle={selectedObstacle} onUpdate={onUpdateObstacle} onDuplicate={onDuplicateObstacle} onDelete={onDeleteObstacle} />
             : <Prompt text="Click inside a roof surface to draw an obstacle" />
         )}
         {!isDrawing && activeSubTool === "draw-panel" && (
@@ -477,14 +478,35 @@ function MeasureDisplay({ mm, customLength, onSetCustomLength }: {
   );
 }
 
-function ObstacleControls({ obstacle, onUpdate, onDelete }: {
+function ObstacleControls({ obstacle, onUpdate, onDuplicate, onDelete }: {
   obstacle: ObstacleData;
   onUpdate: (u: Partial<ObstacleData>) => void;
+  onDuplicate: () => void;
   onDelete: () => void;
 }) {
   const [focused, setFocused] = useState(false);
   return (
     <div className={TOOLBAR}>
+      {/* Height input */}
+      <div className="flex items-center gap-1.5">
+        <span className="text-white/75 text-[12px] font-['Figtree',sans-serif]">Height</span>
+        <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
+          <path d="M6.5 11V2M6.5 2L3 5.5M6.5 2L10 5.5" stroke="#ef4444" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <input
+          type="number"
+          value={obstacle.height ?? 0}
+          onChange={(e) => onUpdate({ height: Number(e.target.value) })}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className="w-16 h-7 bg-transparent border rounded px-2 text-white text-[12px] font-['Figtree',sans-serif] outline-none text-center transition-colors"
+          style={{ borderColor: focused ? "#ef4444" : "rgba(255,255,255,0.3)" }}
+        />
+        <span className="text-white/50 text-[11px] font-['Figtree',sans-serif]">mm</span>
+      </div>
+
+      <div className="w-px h-5 bg-white/25 shrink-0" />
+
       {/* Top of the obstacle: parallel to the roof slope vs level like a chimney */}
       <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 shrink-0">
         <button
@@ -517,26 +539,20 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
 
       <div className="w-px h-5 bg-white/25 shrink-0" />
 
-      {/* Height input */}
-      <div className="flex items-center gap-1.5">
-        <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
-          <path d="M6.5 11V2M6.5 2L3 5.5M6.5 2L10 5.5" stroke="#ef4444" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <button
+        onClick={onDuplicate}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/15 border border-white/20 text-white/80 hover:text-white hover:bg-white/25 transition-all font-['Figtree',sans-serif] text-[12px] font-medium"
+      >
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <rect x="1" y="4" width="8" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M4 3.5V2.5a1 1 0 011-1H10.5a1 1 0 011 1V8a1 1 0 01-1 1H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
-        <input
-          type="number"
-          value={obstacle.height ?? 0}
-          onChange={(e) => onUpdate({ height: Number(e.target.value) })}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          className="w-16 h-7 bg-transparent border rounded px-2 text-white text-[12px] font-['Figtree',sans-serif] outline-none text-center transition-colors"
-          style={{ borderColor: focused ? "#ef4444" : "rgba(255,255,255,0.3)" }}
-        />
-        <span className="text-white/50 text-[11px] font-['Figtree',sans-serif]">mm</span>
-      </div>
+        Duplicate
+      </button>
 
       <div className="w-px h-5 bg-white/25 shrink-0" />
 
-      <DeleteButton onClick={onDelete} label={null} light />
+      <DeleteButton onClick={onDelete} light />
     </div>
   );
 }
