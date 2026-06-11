@@ -10,12 +10,12 @@ export function SunPathView({ onClose }: SunPathViewProps) {
   const img = import.meta.env.BASE_URL + "sun-path.jpeg";
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#3b4a2e]">
-      {/* Mockup image (falls back to a neutral backdrop if not present) */}
+    <div className="fixed inset-0 z-[60] bg-[#151b1e]">
+      {/* Mockup image — contained so it always fits fully, whatever the window size */}
       <img
         src={img}
         alt="Sun path 3D preview"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-contain"
         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
       />
 
