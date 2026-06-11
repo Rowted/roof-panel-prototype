@@ -64,7 +64,7 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
             (activeTool === "roof" && !hasRoof && tool.id !== "draw-roof") ||
             (activeTool === "panel-field" && !hasPanelField && tool.id !== "draw-panel");
 
-          const button = (
+          return (
             <button
               key={tool.id}
               onClick={() => !isLocked && onSubToolChange(tool.id)}
@@ -86,14 +86,6 @@ export function ToolDock({ mode, activeTool, activeSubTool, onSubToolChange, onT
               </span>
             </button>
           );
-
-          if (tool.id === "safety-margins") {
-            return [
-              button,
-              <div key={`divider-${tool.id}`} className="w-px h-8 bg-white/15 mx-1.5 shrink-0" />
-            ];
-          }
-          return button;
         })}
       </div>
     </div>
@@ -209,8 +201,8 @@ const ShadingIcon = () => (
 const ROOF_TOOLS: { id: RoofSubTool; label: string; icon: React.ReactNode }[] = [
   { id: "draw-roof",      label: "Draw roof",       icon: <DrawRoofIcon /> },
   { id: "roof-height",    label: "Roof height",     icon: <RoofHeightIcon /> },
-  { id: "safety-margins", label: "Safety margins",  icon: <SafetyMarginsIcon /> },
   { id: "obstacle",       label: "Obstacle",        icon: <ObstacleIcon /> },
+  { id: "safety-margins", label: "Safety margins",  icon: <SafetyMarginsIcon /> },
 ];
 
 const PANEL_TOOLS: { id: PanelSubTool; label: string; icon: React.ReactNode }[] = [
