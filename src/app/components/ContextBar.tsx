@@ -485,17 +485,35 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
   const [focused, setFocused] = useState(false);
   return (
     <div className={TOOLBAR}>
-      {/* Parallel toggle */}
-      <button
-        onClick={() => onUpdate({ parallel: !obstacle.parallel })}
-        className="flex items-center gap-2 shrink-0"
-        title="Parallel to roof surface"
-      >
-        <span className="text-white/75 text-[12px] font-['Figtree',sans-serif]">Parallel</span>
-        <div className={`relative w-8 h-4 rounded-full border transition-colors ${obstacle.parallel ? "bg-[#84cc16] border-[#84cc16]" : "bg-white/15 border-white/30"}`}>
-          <div className={`absolute top-[2px] size-[10px] rounded-full bg-white transition-transform ${obstacle.parallel ? "translate-x-[16px]" : "translate-x-[2px]"}`} />
-        </div>
-      </button>
+      {/* Orientation: follows the roof plane vs stands upright */}
+      <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 shrink-0">
+        <button
+          onClick={() => onUpdate({ parallel: true })}
+          title="Lies on the roof plane — e.g. a skylight"
+          className={`flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
+            obstacle.parallel ? "bg-[#0068DE] text-white shadow-sm" : "text-white/60 hover:text-white hover:bg-white/8"
+          }`}
+        >
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M1 11L12 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M3.5 7.6L8.5 4.9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          Follows roof
+        </button>
+        <button
+          onClick={() => onUpdate({ parallel: false })}
+          title="Stands vertically — e.g. a chimney"
+          className={`flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
+            !obstacle.parallel ? "bg-[#0068DE] text-white shadow-sm" : "text-white/60 hover:text-white hover:bg-white/8"
+          }`}
+        >
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M1 11L12 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M6.5 8L6.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          Upright
+        </button>
+      </div>
 
       <div className="w-px h-5 bg-white/25 shrink-0" />
 
