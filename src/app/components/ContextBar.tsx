@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { RoofMargins } from "./Sidebar";
 import { ObstacleData } from "./MapCanvas";
 
@@ -11,6 +11,8 @@ interface ContextBarProps {
   mode: "basic" | "pro";
   activeSubTool: string;
   drawingMeasure: number | null;
+  customLength: number | null;
+  onSetCustomLength: (v: number | null) => void;
   isAdjustingHeight: boolean;
   selectedRoofId: string | null;
   margins: RoofMargins | null;
@@ -35,7 +37,7 @@ interface ContextBarProps {
 
 const CONTEXT_TOOLS = ["draw-roof", "draw-panel", "safety-margins", "roof-height", "obstacle", "shading-analysis"];
 
-export function ContextBar({ mode, activeSubTool, drawingMeasure, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
+export function ContextBar({ mode, activeSubTool, drawingMeasure, customLength, onSetCustomLength, isAdjustingHeight, selectedRoofId, margins, onUpdateMargins, roofHeight, onUpdateRoofHeight, onDuplicateRoof, onDeleteRoof, selectedObstacle, onUpdateObstacle, onDeleteObstacle, hasSelectedPanelField, onDuplicatePanelField, onDeletePanelField, shadingDisplay, onToggleShadingDisplay, shadingSelectorActive, onToggleShadingSelector, shadingValue, selectedRoofCount }: ContextBarProps) {
   const isDrawing = (activeSubTool === "draw-roof" || activeSubTool === "draw-panel" || activeSubTool === "obstacle") && drawingMeasure !== null;
   if (!CONTEXT_TOOLS.includes(activeSubTool) && !isDrawing) return null;
 
@@ -47,7 +49,7 @@ export function ContextBar({ mode, activeSubTool, drawingMeasure, isAdjustingHei
         key={activeSubTool + (hasSelection ? "-active" : "-idle") + (isAdjustingHeight ? "-adj" : "")}
         className="pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-150"
       >
-        {isDrawing && <MeasureDisplay mm={drawingMeasure!} />}
+        {isDrawing && <MeasureDisplay mm={drawingMeasure!} customLength={customLength} onSetCustomLength={onSetCustomLength} />}
         {!isDrawing && activeSubTool === "draw-roof" && (
           selectedRoofCount > 0
             ? (mode === "basic"
@@ -385,21 +387,82 @@ function PanelSelectActions({ onDuplicate, onDelete }: { onDuplicate: () => void
   );
 }
 
-function MeasureDisplay({ mm }: { mm: number }) {
-  const formatted = mm.toLocaleString("de-CH");
+function MeasureDisplay({ mm, customLength, onSetCustomLength }: {
+  mm: number;
+  customLength: number | null;
+  onSetCustomLength: (v: number | null) => void;
+}) {
+  // draft !== null while the user is typing in the field
+  const [draft, setDraft] = useState<string | null>(null);
+  const cancelRef = useRef(false);
+  const active = customLength !== null;
+  const shown = draft !== null ? draft : (active ? customLength : mm).toLocaleString("de-CH");
+
+  const commit = () => {
+    if (cancelRef.current) {
+      cancelRef.current = false;
+      setDraft(null);
+      return;
+    }
+    const v = Number((draft ?? "").replace(/\D/g, ""));
+    onSetCustomLength(v > 0 ? v : null);
+    setDraft(null);
+  };
+
   return (
-    <div className="flex items-center gap-3 bg-[rgba(21,27,30,0.96)] border border-white/10 rounded-xl px-4 py-2.5 shadow-xl backdrop-blur-sm">
-      <span className="text-white/50 text-[12px] font-['Figtree',sans-serif]">Length</span>
+    <div className={TOOLBAR}>
+      <span className="text-white/75 text-[12px] font-['Figtree',sans-serif] whitespace-nowrap">
+        {active ? "Custom length" : "Length"}
+      </span>
       <div className="flex items-center gap-1.5">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M1 7H13M1 7L4 4M1 7L4 10M13 7L10 4M13 7L10 10" stroke="#0068DE" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <span className="text-white text-[13px] font-['Figtree',sans-serif] font-semibold tabular-nums">{formatted}</span>
-        <span className="text-white/50 text-[12px] font-['Figtree',sans-serif]">mm</span>
+        {/* m↔ unit icon, as in the live app */}
+        <div className={`flex flex-col items-center justify-center w-7 h-7 rounded-md border leading-none shrink-0 transition-colors ${
+          active ? "border-[#22d3ee] text-[#22d3ee]" : "border-white/30 text-white/70"
+        }`}>
+          <span className="text-[8px] font-semibold font-['Figtree',sans-serif]">m</span>
+          <span className="text-[8px] -mt-px tracking-tighter">|↔|</span>
+        </div>
+        <input
+          type="text"
+          inputMode="numeric"
+          title="Type a custom length"
+          value={shown}
+          onFocus={(e) => {
+            setDraft(active ? String(customLength) : "");
+            requestAnimationFrame(() => e.target.select());
+          }}
+          onChange={(e) => setDraft(e.target.value.replace(/\D/g, ""))}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              cancelRef.current = true;
+              e.currentTarget.blur();
+            }
+          }}
+          className={`w-24 h-7 bg-transparent border rounded-md px-2 text-[13px] font-['Figtree',sans-serif] font-semibold text-center tabular-nums outline-none cursor-text transition-colors ${
+            active
+              ? "border-[#22d3ee] text-[#22d3ee]"
+              : "border-white/30 text-white hover:border-white/60 focus:border-[#22d3ee]"
+          }`}
+        />
+        <span className="text-white/60 text-[12px] font-['Figtree',sans-serif]">mm</span>
+        {active && (
+          <button
+            onClick={() => onSetCustomLength(null)}
+            title="Clear custom length"
+            className="flex items-center justify-center w-5 h-5 rounded text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+              <path d="M1 1L8 8M8 1L1 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </button>
+        )}
       </div>
-      <span className="w-px h-5 bg-white/15" />
-      <span className="flex items-center gap-1.5 text-white/40 text-[11px] font-['Figtree',sans-serif] whitespace-nowrap">
-        <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-white/60 text-[10px] font-medium">Esc</kbd>
+      <span className="w-px h-5 bg-white/25" />
+      <span className="flex items-center gap-1.5 text-white/55 text-[11px] font-['Figtree',sans-serif] whitespace-nowrap">
+        <kbd className="px-1.5 py-0.5 rounded bg-white/15 border border-white/25 text-white/70 text-[10px] font-medium">Esc</kbd>
         to cancel
       </span>
     </div>

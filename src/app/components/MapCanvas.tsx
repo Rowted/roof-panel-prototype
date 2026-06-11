@@ -40,6 +40,8 @@ interface MapCanvasProps {
   multiRoofIds: string[];
   onShiftSelectRoof: (id: string) => void;
   onResetGeometry: () => void;
+  customLength: number | null;
+  onSetCustomLength: (v: number | null) => void;
 }
 
 function polygonArea(points: Point[]): number {
@@ -486,6 +488,7 @@ export function MapCanvas({
   onSelectPanelField, onUpdatePanelFieldPoints,
   shadingSelectorActive, onShadingPick,
   multiRoofIds, onShiftSelectRoof, onResetGeometry,
+  customLength, onSetCustomLength,
 }: MapCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -511,6 +514,16 @@ export function MapCanvas({
   const getRelativePoint = (e: React.MouseEvent): Point => {
     const rect = canvasRef.current!.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  // With a custom length set, snap the next point onto the fixed-radius
+  // circle around the last placed point (1px ≈ 158mm at this zoom).
+  const applyCustomLength = (pt: Point): Point => {
+    if (!customLength || drawingPoints.length === 0) return pt;
+    const last = drawingPoints[drawingPoints.length - 1];
+    const r = customLength / 158;
+    const a = Math.atan2(pt.y - last.y, pt.x - last.x);
+    return { x: last.x + Math.cos(a) * r, y: last.y + Math.sin(a) * r };
   };
 
   const drawAll = useCallback(() => {
@@ -619,7 +632,15 @@ export function MapCanvas({
     // Draw in-progress polygon
     if (drawingPoints.length > 0) {
       const drawColor = activeSubTool === "obstacle" ? "#ef4444" : (activeTool === "panel-field" ? "#5aabff" : "#0068DE");
-      const allPoints = mousePos ? [...drawingPoints, mousePos] : drawingPoints;
+      // Custom length: snap the rubber-band point onto the fixed-radius circle
+      let previewPt = mousePos;
+      if (mousePos && customLength) {
+        const last = drawingPoints[drawingPoints.length - 1];
+        const r = customLength / 158;
+        const a = Math.atan2(mousePos.y - last.y, mousePos.x - last.x);
+        previewPt = { x: last.x + Math.cos(a) * r, y: last.y + Math.sin(a) * r };
+      }
+      const allPoints = previewPt ? [...drawingPoints, previewPt] : drawingPoints;
       ctx.beginPath();
       ctx.moveTo(drawingPoints[0].x, drawingPoints[0].y);
       allPoints.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
@@ -646,8 +667,23 @@ export function MapCanvas({
         ctx.stroke();
       });
 
+      // Fixed-length guide circle around the last placed point
+      if (customLength) {
+        const last = drawingPoints[drawingPoints.length - 1];
+        const r = customLength / 158;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(last.x, last.y, r, 0, Math.PI * 2);
+        ctx.strokeStyle = "#67e8f9";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([7, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
     }
-  }, [mode, drawnRoofs, drawnPanelFields, drawingPoints, mousePos, selectedRoofId, selectedPanelFieldId, activeTool, activeSubTool, roofs, isDraggingHeight, dragPreview, heightDragCentroid, heightDragCurrent, obstacles, selectedObstacleId, multiRoofIds, selectedNodes, arrowHovered]);
+  }, [mode, drawnRoofs, drawnPanelFields, drawingPoints, mousePos, selectedRoofId, selectedPanelFieldId, activeTool, activeSubTool, roofs, isDraggingHeight, dragPreview, heightDragCentroid, heightDragCurrent, obstacles, selectedObstacleId, multiRoofIds, selectedNodes, arrowHovered, customLength]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -687,6 +723,7 @@ export function MapCanvas({
     setDrawingPoints([]);
     setMousePos(null);
     onDrawingMeasure(null);
+    onSetCustomLength(null);
   };
 
   const finishPanelField = (points: Point[], roofId: string) => {
@@ -708,6 +745,7 @@ export function MapCanvas({
     setDrawingPoints([]);
     setMousePos(null);
     onDrawingMeasure(null);
+    onSetCustomLength(null);
   };
 
   const finishObstacle = (points: Point[], roofId: string) => {
@@ -721,6 +759,7 @@ export function MapCanvas({
     setDrawingPoints([]);
     setMousePos(null);
     onDrawingMeasure(null);
+    onSetCustomLength(null);
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -770,7 +809,7 @@ export function MapCanvas({
           return;
         }
       }
-      setDrawingPoints((prev) => [...prev, pt]);
+      setDrawingPoints((prev) => [...prev, applyCustomLength(pt)]);
       return;
     }
 
@@ -794,7 +833,7 @@ export function MapCanvas({
             return;
           }
         }
-        setDrawingPoints((prev) => [...prev, pt]);
+        setDrawingPoints((prev) => [...prev, applyCustomLength(pt)]);
         return;
       }
       // Not drawing: clicking inside an existing roof selects it (handled in mousedown).
@@ -820,7 +859,7 @@ export function MapCanvas({
             return;
           }
         }
-        setDrawingPoints((prev) => [...prev, pt]);
+        setDrawingPoints((prev) => [...prev, applyCustomLength(pt)]);
         return;
       }
       // Not drawing: clicking a panel field selects it (handled in mousedown).
@@ -973,13 +1012,14 @@ export function MapCanvas({
       setMousePos(pt);
       const last = drawingPoints[drawingPoints.length - 1];
       const px = Math.hypot(pt.x - last.x, pt.y - last.y);
-      onDrawingMeasure(Math.round(pixelToMeters(px) * 1000));
+      onDrawingMeasure(customLength ?? Math.round(pixelToMeters(px) * 1000));
     }
   };
 
   const handleMouseLeave = () => {
     setMousePos(null);
-    onDrawingMeasure(null);
+    // Keep the measure bar mounted mid-drawing so the length input stays usable
+    if (drawingPoints.length === 0) onDrawingMeasure(null);
     setArrowHovered(false);
     if (activeSubTool === "draw-roof" || activeSubTool === "draw-panel") setCursorStyle("cursor-crosshair");
   };
@@ -987,15 +1027,17 @@ export function MapCanvas({
   // Esc cancels any in-progress drawing
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setDrawingPoints([]);
-        setMousePos(null);
-        onDrawingMeasure(null);
-      }
+      if (e.key !== "Escape") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+      setDrawingPoints([]);
+      setMousePos(null);
+      onDrawingMeasure(null);
+      onSetCustomLength(null);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onDrawingMeasure]);
+  }, [onDrawingMeasure, onSetCustomLength]);
 
   // Clear node selection when the primary selected roof changes
   useEffect(() => { setSelectedNodes([]); }, [selectedRoofId]);

@@ -54,6 +54,11 @@ export default function App() {
   const [selectedPanelFieldId, setSelectedPanelFieldId] = useState<string | null>(null);
   const [drawingMeasure, setDrawingMeasure] = useState<number | null>(null);
   const [isAdjustingHeight, setIsAdjustingHeight] = useState(false);
+  // Fixed segment length (mm) typed by the user while drawing
+  const [customLength, setCustomLength] = useState<number | null>(null);
+
+  // Reset the custom length when switching tools
+  useEffect(() => { setCustomLength(null); }, [activeTool, activeSubTool]);
 
   const [obstacles, setObstacles] = useState<ObstacleData[]>([]);
   const [selectedObstacleId, setSelectedObstacleId] = useState<string | null>(null);
@@ -292,11 +297,15 @@ export default function App() {
             onUpdateRoofHeightDrag={handleUpdateRoofHeightDrag}
             onDrawingMeasure={setDrawingMeasure}
             onHeightAdjusting={setIsAdjustingHeight}
+            customLength={customLength}
+            onSetCustomLength={setCustomLength}
           />
           <ContextBar
             mode={mode}
             activeSubTool={activeSubTool}
             drawingMeasure={drawingMeasure}
+            customLength={customLength}
+            onSetCustomLength={setCustomLength}
             isAdjustingHeight={isAdjustingHeight}
             selectedRoofId={selectedRoofId}
             margins={roofs.find((r) => r.id === selectedRoofId)?.margins ?? null}
