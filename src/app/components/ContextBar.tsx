@@ -485,33 +485,33 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
   const [focused, setFocused] = useState(false);
   return (
     <div className={TOOLBAR}>
-      {/* Orientation: follows the roof plane vs stands upright */}
+      {/* Top of the obstacle: parallel to the roof slope vs level like a chimney */}
       <div className="flex items-center gap-1 bg-black/30 rounded-lg p-1 shrink-0">
         <button
           onClick={() => onUpdate({ parallel: true })}
-          title="Lies on the roof plane — e.g. a skylight"
+          title="Top follows the roof slope — e.g. a roof window box"
           className={`flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
             obstacle.parallel ? "bg-[#0068DE] text-white shadow-sm" : "text-white/60 hover:text-white hover:bg-white/8"
           }`}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <path d="M1 11L12 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            <path d="M3.5 7.6L8.5 4.9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M1 11.5L12 5.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+            <path d="M4.5 9.6V4.9L8.5 2.7V7.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Follows roof
+          Sloped top
         </button>
         <button
           onClick={() => onUpdate({ parallel: false })}
-          title="Stands vertically — e.g. a chimney"
+          title="Top is level — e.g. a chimney"
           className={`flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
             !obstacle.parallel ? "bg-[#0068DE] text-white shadow-sm" : "text-white/60 hover:text-white hover:bg-white/8"
           }`}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <path d="M1 11L12 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            <path d="M6.5 8L6.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M1 11.5L12 5.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+            <path d="M4.5 9.6V3.5H8.5V7.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Upright
+          Flat top
         </button>
       </div>
 
