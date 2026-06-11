@@ -490,7 +490,7 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
         <button
           onClick={() => onUpdate({ parallel: true })}
           title="Top follows the roof slope — e.g. a roof window box"
-          className={`flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
+          className={`flex items-center justify-center gap-1.5 h-7 w-[108px] rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
             obstacle.parallel ? "bg-[#0068DE] text-white shadow-sm" : "text-white/60 hover:text-white hover:bg-white/8"
           }`}
         >
@@ -503,7 +503,7 @@ function ObstacleControls({ obstacle, onUpdate, onDelete }: {
         <button
           onClick={() => onUpdate({ parallel: false })}
           title="Top is level — e.g. a chimney"
-          className={`flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
+          className={`flex items-center justify-center gap-1.5 h-7 w-[108px] rounded-md text-[12px] font-medium font-['Figtree',sans-serif] transition-colors ${
             !obstacle.parallel ? "bg-[#0068DE] text-white shadow-sm" : "text-white/60 hover:text-white hover:bg-white/8"
           }`}
         >
