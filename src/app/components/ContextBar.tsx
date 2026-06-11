@@ -395,6 +395,7 @@ function MeasureDisplay({ mm, customLength, onSetCustomLength }: {
   // draft !== null while the user is typing in the field
   const [draft, setDraft] = useState<string | null>(null);
   const cancelRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const active = customLength !== null;
   const shown = draft !== null ? draft : (active ? customLength : mm).toLocaleString("de-CH");
 
@@ -414,18 +415,27 @@ function MeasureDisplay({ mm, customLength, onSetCustomLength }: {
       <span className="text-white/75 text-[12px] font-['Figtree',sans-serif] whitespace-nowrap">
         {active ? "Custom length" : "Length"}
       </span>
-      <div className="flex items-center gap-1.5">
-        {/* m↔ unit icon, as in the live app */}
-        <div className={`flex flex-col items-center justify-center w-7 h-7 rounded-md border leading-none shrink-0 transition-colors ${
-          active ? "border-[#22d3ee] text-[#22d3ee]" : "border-white/30 text-white/70"
+      {/* One grouped field: icon prefix + value + mm suffix (+ clear when locked) */}
+      <div
+        onClick={() => inputRef.current?.focus()}
+        title="Type a custom length"
+        className={`flex items-center gap-1 h-8 pl-2 pr-1.5 rounded-lg border cursor-text transition-colors ${
+          active
+            ? "border-[#22d3ee]"
+            : "border-white/30 hover:border-white/60 focus-within:border-[#22d3ee]"
+        }`}
+      >
+        {/* m↔ prefix icon */}
+        <div className={`flex flex-col items-center justify-center leading-none shrink-0 pr-1 ${
+          active ? "text-[#22d3ee]" : "text-white/50"
         }`}>
           <span className="text-[8px] font-semibold font-['Figtree',sans-serif]">m</span>
           <span className="text-[8px] -mt-px tracking-tighter">|↔|</span>
         </div>
         <input
+          ref={inputRef}
           type="text"
           inputMode="numeric"
-          title="Type a custom length"
           value={shown}
           onFocus={(e) => {
             setDraft(active ? String(customLength) : "");
@@ -441,18 +451,16 @@ function MeasureDisplay({ mm, customLength, onSetCustomLength }: {
               e.currentTarget.blur();
             }
           }}
-          className={`w-24 h-7 bg-transparent border rounded-md px-2 text-[13px] font-['Figtree',sans-serif] font-semibold text-center tabular-nums outline-none cursor-text transition-colors ${
-            active
-              ? "border-[#22d3ee] text-[#22d3ee]"
-              : "border-white/30 text-white hover:border-white/60 focus:border-[#22d3ee]"
+          className={`w-16 bg-transparent text-[13px] font-['Figtree',sans-serif] font-semibold text-center tabular-nums outline-none border-none cursor-text ${
+            active ? "text-[#22d3ee]" : "text-white"
           }`}
         />
-        <span className="text-white/60 text-[12px] font-['Figtree',sans-serif]">mm</span>
+        <span className={`text-[12px] font-['Figtree',sans-serif] ${active ? "text-[#22d3ee]/70" : "text-white/50"}`}>mm</span>
         {active && (
           <button
-            onClick={() => onSetCustomLength(null)}
+            onClick={(e) => { e.stopPropagation(); onSetCustomLength(null); }}
             title="Clear custom length"
-            className="flex items-center justify-center w-5 h-5 rounded text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center w-5 h-5 ml-0.5 rounded text-[#22d3ee]/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
           >
             <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
               <path d="M1 1L8 8M8 1L1 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
